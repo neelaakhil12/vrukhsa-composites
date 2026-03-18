@@ -1,0 +1,109 @@
+{
+    "banners": [
+        {
+            "id": "1",
+            "image": "/synthetic fiber/Synthetic Fiber Images/SYNTHETIC  Fibers - JPG/Nylon Carbon & Kevlar fabric (W-Type).jpg",
+            "title": "Vruksha Composites",
+            "subtitle": "Expertise in Advanced Materials & Research",
+            "link": "/search"
+        },
+        {
+            "id": "2",
+            "image": "/synthetic fiber/Synthetic Fiber Images/SYNTHETIC  Fibers - JPG/Carbon Fiber Fabric (2) Twill Type.jpg",
+            "title": "Additive NanoWorks",
+            "subtitle": "Building the Future, Atom by Atom!",
+            "link": "/search?category=additive%20nanoworks"
+        },
+        {
+            "id": "3",
+            "image": "/nature-fiber images/Nature Fibers - JPG/Sisal Fiber 6.JPG",
+            "title": "Natural Fibers",
+            "subtitle": "Sustainable, Eco-friendly, and High-Performance",
+            "link": "/search?category=natural%20fibers"
+        }
+    ],
+    "categories": [
+        {
+            "id": "natural fibers",
+            "name": "Natural Fibers",
+            "icon": "🌿"
+        },
+        {
+            "id": "synthetic fibers",
+            "name": "Synthetic Fibers",
+            "icon": "🧵"
+        },
+        {
+            "id": "nano products",
+            "name": "Nano Products",
+            "icon": "🔬"
+        },
+        {
+            "id": "chemical powders",
+            "name": "Chemical Powders",
+            "icon": "🧪"
+        },
+        {
+            "id": "resins",
+            "name": "Resins",
+            "icon": "🧴"
+        },
+        {
+            "id": "composite making",
+            "name": "Composite Making",
+            "icon": "🛠️"
+        },
+        {
+            "id": "additive nanoworks",
+            "name": "Additive NanoWorks",
+            "icon": "⚗️"
+        },
+        {
+            "id": "additive nanoworks - pure micro powder",
+            "name": "Micro Powder (ANW)",
+            "icon": "🌫️"
+        },
+        {
+            "id": "additive nanoworks - pure nano powder",
+            "name": "Nano Powder (ANW)",
+            "icon": "⚛️"
+        },
+        {
+            "id": "additive nanoworks - pure oxide micro powder",
+            "name": "Oxide Micro Powder",
+            "icon": "⚪"
+        },
+        {
+            "id": "additive nanoworks - pure oxide nano powder",
+            "name": "Oxide Nano Powder",
+            "icon": "❄️"
+        },
+        {
+            "id": "additive nanoworks - spherical powders",
+            "name": "Spherical Powders",
+            "icon": "🔮"
+        },
+        {
+            "id": "yarns",
+            "name": "Yarns",
+            "icon": "🧵"
+        },
+        {
+            "id": "fiber fabrics",
+            "name": "Fiber Fabrics",
+            "icon": "📏"
+        },
+        {
+            "id": "rebars",
+            "name": "Rebars",
+            "icon": "🏗️"
+        },
+        {
+            "id": "testing services",
+            "name": "Testing Services",
+            "icon": "🧪"
+        }
+    ],
+    "contactEmail": "proof@vrukshacomposites.com",
+    "aboutUs": "Vruksha Composites - Proof of Work. This page content was updated via the Admin Panel CMS correctly!"
+}

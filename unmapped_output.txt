@@ -1,0 +1,50 @@
+--- Unmapped Images Output ---
+Found 48 unmapped images:
+ - logo.jpeg
+ - nature-fiber images\Nature Fibers - JPG\Epoxy Resin.JPG
+ - nature-fiber images\Nature Fibers - JPG\Palmyra Palm 2.JPG
+ - nature-fiber images\Nature Fibers - JPG\Palmyra palm.JPG
+ - nature-fiber images\Nature Fibers - JPG\Silk Yarn 2.JPG
+ - nature-fiber images\Nature Fibers - JPG\Silk Yarn 3.jpg
+ - nature-fiber images\Nature Fibers - JPG\Silk Yarn.jpg
+ - nature-fiber images\Nature Fibers - JPG\Sisal Powder.JPG
+ - nature-fiber images\Nature Fibers - JPG\Vimhal Fiber.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\aluminium Honey Comb ST 2.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Aluminium Honey Comb ST.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\AR Glass fabric.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Bi-Directional UHMWPE Fabric 3.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Bi-Directional UHMWPE fabric.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Chopped Aramid Fiber 3.JPG
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Chopped Aramid Fiber.JPG
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Chopped Glass Fiber 2.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Chopped Glass Fiber.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Chopped kevlar Fiber.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Crimped Steel Fiber 3.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Crimped Steel Fiber.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\E Type Glass Fiber Mat.JPG
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Epoxy Resin.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Glass Mat Uni-Directional.JPG
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Hybric Carbon & Kevlar Fabric (W-Type) 1.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Hybrid Carbom & Kevlar fabric (T-Type) 1.JPG
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Hybrid Carbon & Kevlar Fabric W-Type (1).jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Hybrid carbon & Kevlar Fabric(T-Type).jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Micro steel Fiber.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Nylon Carbon & Kevlar fabric (W-Type).jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Nylon Fabric 2.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Nylon fabric 4.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Nylon Fabric.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Nylon Fiber 6(18MM).jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Nylon Fiber 6.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Optical Fiber 3.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Optical Fiber.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\PVA Fiber 2.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\PVA Fiber.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\S Glass mat.JPG
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\UHMWPE fabric Plain Type 3.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\UHMWPE Fabric Twill Type 2.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\UHMWPE Fabric Uni-Directional.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\UHMWPE Fabric.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Uni-Directional Glass Fiber Mat.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Uni-Directional Glass Fiber.jpg
+ - synthetic fiber\Synthetic Fiber Images\SYNTHETIC  Fibers - JPG\Uni-Directonal Basalt fabric.jpg
+ - WhatsApp Image 2026-02-05 at 3.36.52 PM.jpeg

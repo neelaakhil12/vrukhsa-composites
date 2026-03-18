@@ -1,0 +1,250 @@
+Banana Mat BD
+Chopped Jute Fiber
+Jute Mat UD
+Sisal Mat BD
+Chopped Kenaf Fiber
+Kenaf Mat BD
+Chopped Ramie Fiber
+Ramie Mat BD
+Chopped Bamboo Fiber
+Bamboo Mat UD
+Bamboo Mat BD
+Chopped Sunhemp Fiber
+Sunhemp Mat UD
+Chopped Pineapple Leaf Fiber
+Chopped Angora Fiber
+Coir Fiber
+Chopped Coir Fiber
+Chopped Areca Fiber
+Aluminum Nitride Powder
+Antimony Powder
+Boron Powder
+Boron Carbide Powder
+Boric Powder
+Boron Nitride Powder
+Bismuth Powder
+Clay Powder
+Copper Powder
+Chromium Powder
+CNT Powder
+Carbonyl Iron Powder
+Cellulose Powder
+Chitosan Powder
+Diamond Powder
+Gold Powder
+Graphene Powder
+Hafnium Powder
+Iron Powder
+Kaolin Powder
+Lead Powder
+Lithium Powder
+Magnesium Powder
+Molybdenum Powder
+Molybdenum Disulfide Powder
+Manganese Powder
+MWCNT Powder
+Montmorillonite Nanoclay
+Niobium Powder
+Nickel Powder
+Nanoclay Powder
+Neobium Powder
+Fused Silica Powder
+Silicon Powder
+Silicon Carbide Powder
+Silica Powder
+Silicon Nitride Powder
+Silver Powder
+Sulphur Powder
+SWCNT Powder
+Selenium Powder
+Tin Powder
+Tantalum Powder
+Titanium Carbide Powder
+Titanium Nitride Powder
+Tungsten Powder
+Tungsten Carbide Powder
+Tellurium Powder
+Vanadium Powder
+Vanadium Carbide Powder
+Yttrium Powder
+Zirconium Powder
+Zirconium Carbide Powder
+Zinc Powder
+Zeolite Powder
+Aluminum Nitride Nano Powder
+Antimony Nano Powder
+Boron Nano Powder
+Boron Carbide Nano Powder
+Boric Nano Powder
+Boron Nitride Nano Powder
+Bismuth Nano Powder
+Clay Nano Powder
+Copper Nano Powder
+Chromium Nano Powder
+Cellulose Nano Powder
+CNT Nano Powder
+Carbonyl Iron Nano Powder
+Cellulose Nano Powder
+Chitosan Nano Powder
+Diamond Nano Powder
+Gold Nano Powder
+Graphene Nano Powder
+Hafnium Nano Powder
+Iron Nano Powder
+Kaolin Nano Powder
+Lead Nano Powder
+Lithium Nano Powder
+Magnesium Nano Powder
+Molybdenum Nano Powder
+Molybdenum Disulfide Nano Powder
+Manganese Nano Powder
+MWCNT Nano Powder
+Montmorillonite Nanoclay Nano Powder
+Niobium Nano Powder
+Nickel Nano Powder
+Nanoclay Nano Powder
+Neobium Nano Powder
+Fused Silica Nano Powder
+Silicon Nano Powder
+Silicon Carbide Nano Powder
+Silica Nano Powder
+Silicon Nitride Nano Powder
+Silver Nano Powder
+Sulphur Nano Powder
+SWCNT Nano Powder
+Selenium Nano Powder
+Tin Nano Powder
+Tantalum Nano Powder
+Titanium Carbide Nano Powder
+Titanium Nitride Nano Powder
+Tungsten Nano Powder
+Tungsten Carbide Nano Powder
+Tellurium Nano Powder
+Vanadium Nano Powder
+Vanadium Carbide Nano Powder
+Yttrium Nano Powder
+Zirconium Nano Powder
+Zirconium Carbide Nano Powder
+Zinc Nano Powder
+Zeolite Nano Powder
+Aluminum Oxide Powder
+Aluminum Hydroxide Powder
+Aluminium Oxide Powder
+Boron Oxide Powder
+Boric Oxide Powder
+Bismuth Trioxide Powder
+Copper Oxide Powder
+Chromium Oxide Powder
+Cobalt Oxide Powder
+Cerium Oxide Powder
+Graphene Oxide Powder
+Hafnium Oxide Powder
+Iron Oxide Powder
+Lead Oxide Powder
+Manganese Dioxide Powder
+Magnesium Oxide Powder
+Molybdenum Oxide Powder
+Manganese Oxide Powder
+Niobium Oxide Powder
+Nickel Oxide Powder
+Silver Oxide Powder
+Silicon Dioxide Powder
+Selenium Oxide Powder
+Tin Dioxide Powder
+Tungsten Oxide Powder
+Titanium Dioxide Powder
+Zirconium Oxide Powder
+Zinc Oxide Powder
+Aluminum Oxide Nano Powder
+Aluminum Hydroxide Nano Powder
+Aluminium Oxide Nano Powder
+Boron Oxide Nano Powder
+Boric Oxide Nano Powder
+Bismuth Trioxide Nano Powder
+Copper Oxide Nano Powder
+Chromium Oxide Nano Powder
+Cobalt Oxide Nano Powder
+Cerium Oxide Nano Powder
+Graphene Oxide Nano Powder
+Hafnium Oxide Nano Powder
+Iron Oxide Nano Powder
+Lead Oxide Nano Powder
+Manganese Dioxide Nano Powder
+Magnesium Oxide Nano Powder
+Molybdenum Oxide Nano Powder
+Manganese Oxide Nano Powder
+Niobium Oxide Nano Powder
+Nickel Oxide Nano Powder
+Silver Oxide Nano Powder
+Silicon Dioxide Nano Powder
+Selenium Oxide Nano Powder
+Tin Dioxide Nano Powder
+Tungsten Oxide Nano Powder
+Titanium Dioxide Nano Powder
+Zirconium Oxide Nano Powder
+Zinc Oxide Nano Powder
+Titanium Alloys Ti6Al4V
+Pure Titanium CP-Ti
+Aluminium Alloys AlSi10Mg
+Aluminium Alloys Al7075/Al6061
+Ferro Alloys SS316L/SS304/SS409
+Cobalt Alloys CoCrW
+Nickel Alloys Ni718/Ni625
+Nickel Alloys HX
+Pure Cobalt Powder
+Pure Chromium Powder
+Pure Copper Atomized / Sphericals
+Glass Fiber Yarn
+Basalt Fiber Yarn
+Carbon Fiber Fabric BD
+Basalt Fiber Fabric (Twill)
+Basalt Fiber Fabric (Plain)
+Basalt Fiber Fabric UD
+Kevlar Fiber Fabric (Twill)
+Glass Fiber Fabric (Twill)
+Glass Fiber Fabric (S-Type)
+Glass Fiber Fabric (AR-Type)
+UHMWPE Fiber Fabric BD
+Nomex Fiber Fabric BD
+Hybrid Carbon & Kevlar Fiber Fabric (T-Type)
+Hybrid Carbon & Kevlar Fiber Fabric (W-Type)
+Hybrid Carbon & Glass Fiber Fabric (Twill)
+CFRP Rebar
+Silica Fume (White & Gray)
+Metakaolin powder
+Micro Silica
+Quartz powder
+Vermiculite powder
+GGBS
+Silica sand / Brown silica sand / Foundry sand
+Dolomite powder
+Lime stone powder
+Sodium Hydroxide Flakes
+Pumica powder
+Asbestos pluff powder
+Magnesium Silicate
+Bentonite clay powder
+Hydrated Aluminium silicate / calcium silicate
+Viscosity modify Agent
+Concrete waterproofing Admixture
+Aluminium Silicate powder
+Micronized carbon black powder
+PVA Liquid / Magnesium Hydro silicate
+Synthetic black iron oxide
+Thermoplastic resin
+Phenolic resin / Vinyl ester resin
+Polyester resin
+GP resin / catalyst
+Bio resin (PLA, Neem Shell, CNSL)
+Huntsman resin
+L12/K6 hardener
+Steel Fiber (Hooked)
+Glass Fiber (S-Type)
+Glass Powder
+Tensile test
+Compression test
+Flexural test
+Impact test (IZOD)
+Water Absorption
+XRD test
+SEM Test
