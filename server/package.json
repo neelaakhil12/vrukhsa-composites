@@ -17,6 +17,7 @@
   "description": "Flipkart Clone Backend API",
   "dependencies": {
     "@prisma/client": "^7.5.0",
+    "@prisma/config": "^7.5.0",
     "axios": "^1.13.5",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
@@ -39,5 +40,8 @@
     "prisma": "^7.5.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
+  },
+  "prisma": {
+    "seed": "ts-node src/seed.ts"
   }
 }
