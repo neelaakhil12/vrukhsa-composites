@@ -117,21 +117,26 @@ if (preg_match('#^/categories/?$#', $path)) {
 
 // SETTINGS
 $sf = __DIR__ . '/../server/src/data/site_settings.json';
-// DIAGNOSTIC ROUTE: GET /db-info
+// DIAGNOSTIC ROUTE: GET /api/db-info
 if (preg_match('#^/db-info/?$#', $path) && $method === 'GET') {
-    $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
-    $info = [];
-    foreach ($tables as $table) {
-        $info[$table] = $pdo->query("DESCRIBE $table")->fetchAll(PDO::FETCH_ASSOC);
+    try {
+        $tables = $pdo->query("SELECT name FROM sqlite_master WHERE type='table'")->fetchAll(PDO::FETCH_COLUMN);
+        $info = [];
+        foreach ($tables as $table) {
+            $info[$table] = $pdo->query("PRAGMA table_info($table)")->fetchAll(PDO::FETCH_ASSOC);
+        }
+        echo json_encode($info);
+    } catch (Exception $e) {
+        http_response_code(500);
+        echo json_encode(["error" => $e->getMessage()]);
     }
-    echo json_encode($info);
     exit();
 }
 
 if (preg_match('#^/settings/?$#', $path)) {
     if ($method === 'GET') {
         $data = file_exists($sf) ? json_decode(file_get_contents($sf), true) : [];
-        if (!$data || !isset($data['categories']) || count($data['categories']) <= 3) {
+        if (!$data || !isset($data['categories']) || count($data['categories']) < 5) {
             $data = [
                 'banners' => [],
                 'categories' => [
@@ -146,20 +151,25 @@ if (preg_match('#^/settings/?$#', $path)) {
             ];
         }
 
-        // DYNAMICALY ADD CATEGORIES FROM PRODUCTS TABLE
-        $dbCats = $pdo->query("SELECT DISTINCT category FROM Product WHERE category != '' AND category IS NOT NULL")->fetchAll(PDO::FETCH_COLUMN);
-        $existingIds = array_map(function($c) { return $c['id']; }, $data['categories']);
-        
-        foreach ($dbCats as $cat) {
-            $catId = strtolower(trim($cat));
-            if (!in_array($catId, $existingIds)) {
-                $data['categories'][] = [
-                    'id' => $catId,
-                    'name' => ucwords($cat),
-                    'icon' => '📦' // Default icon for dynamic categories
-                ];
-                $existingIds[] = $catId;
+        // DYNAMIC CATEGORIES: Fetch all unique categories from Product table
+        try {
+            $dbCats = $pdo->query("SELECT DISTINCT category FROM Product WHERE category != '' AND category IS NOT NULL")->fetchAll(PDO::FETCH_COLUMN);
+            $existingIds = array_map(function($c) { return $c['id']; }, $data['categories']);
+            
+            foreach ($dbCats as $cat) {
+                if (!$cat) continue;
+                $catId = strtolower(trim($cat));
+                if (!in_array($catId, $existingIds)) {
+                    $data['categories'][] = [
+                        'id' => $catId,
+                        'name' => ucwords($cat),
+                        'icon' => '📦' // Default icon for dynamic categories
+                    ];
+                    $existingIds[] = $catId;
+                }
             }
+        } catch (Exception $e) {
+            // Silently fail dynamic categories if table doesn't exist yet
         }
 
         echo json_encode($data);
