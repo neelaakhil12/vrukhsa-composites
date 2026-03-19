@@ -16,6 +16,7 @@
   "license": "ISC",
   "description": "Flipkart Clone Backend API",
   "dependencies": {
+    "@prisma/client": "^7.5.0",
     "axios": "^1.13.5",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
@@ -35,6 +36,7 @@
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^25.0.7",
     "nodemon": "^3.1.11",
+    "prisma": "^7.5.0",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.3"
   }
