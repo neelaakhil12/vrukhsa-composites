@@ -5,8 +5,7 @@ import { Filter, Grid, List, ChevronDown, X } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
-import { fetchProducts } from '@/api/client';
-import { categories } from '@/data/products';
+import { fetchProducts, fetchSettings } from '@/api/client';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Slider } from '@/components/ui/slider';
 import {
@@ -31,10 +30,20 @@ const Search = () => {
   const [showFilters, setShowFilters] = useState(false);
 
   // Fetch products from API
-  const { data: products = [], isLoading } = useQuery({
+  const { data: products = [], isLoading: productsLoading } = useQuery({
     queryKey: ['products', categoryParam, query],
     queryFn: () => fetchProducts(categoryParam, query),
   });
+
+  // Fetch categories from settings
+  const { data: siteSettings, isLoading: settingsLoading } = useQuery({
+    queryKey: ['settings'],
+    queryFn: () => fetchSettings(),
+    initialData: { banners: [], categories: [] }
+  });
+
+  const isLoading = productsLoading || settingsLoading;
+  const categories = siteSettings.categories;
 
   // Get unique brands
   const brands = useMemo(() => {

@@ -120,15 +120,25 @@ $sf = __DIR__ . '/../server/src/data/site_settings.json';
 // DIAGNOSTIC ROUTE: GET /api/db-info
 if (preg_match('#^/db-info/?$#', $path) && $method === 'GET') {
     try {
-        $tables = $pdo->query("SELECT name FROM sqlite_master WHERE type='table'")->fetchAll(PDO::FETCH_COLUMN);
-        $info = [];
-        foreach ($tables as $table) {
-            $info[$table] = $pdo->query("PRAGMA table_info($table)")->fetchAll(PDO::FETCH_ASSOC);
+        $driver = $pdo->getAttribute(PDO::ATTR_DRIVER_NAME);
+        $info = ['driver' => $driver];
+        
+        if ($driver === 'sqlite') {
+            $tables = $pdo->query("SELECT name FROM sqlite_master WHERE type='table'")->fetchAll(PDO::FETCH_COLUMN);
+            foreach ($tables as $table) {
+                $info['tables'][$table] = $pdo->query("PRAGMA table_info($table)")->fetchAll(PDO::FETCH_ASSOC);
+            }
+        } else {
+            // Assume MySQL
+            $tables = $pdo->query("SHOW TABLES")->fetchAll(PDO::FETCH_COLUMN);
+            foreach ($tables as $table) {
+                $info['tables'][$table] = $pdo->query("DESCRIBE `$table`")->fetchAll(PDO::FETCH_ASSOC);
+            }
         }
         echo json_encode($info);
     } catch (Exception $e) {
         http_response_code(500);
-        echo json_encode(["error" => $e->getMessage()]);
+        echo json_encode(["error" => $e->getMessage(), "trace" => $e->getTraceAsString()]);
     }
     exit();
 }
