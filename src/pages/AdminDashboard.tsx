@@ -507,7 +507,7 @@ const AdminDashboard = () => {
                                     </button>
                                 </div>
                                 <div className="grid gap-6">
-                                    {siteSettings.banners.map((banner: any, index: number) => (
+                                    {(siteSettings?.banners || []).map((banner: any, index: number) => (
                                         <div key={banner.id} className="group relative bg-gray-50 p-6 rounded-3xl border border-transparent hover:border-primary/20 hover:bg-white hover:shadow-xl transition-all">
                                             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
                                                 <div className="lg:col-span-1">
@@ -599,7 +599,7 @@ const AdminDashboard = () => {
                                     </button>
                                 </div>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                                    {siteSettings.categories.map((cat: any, index: number) => (
+                                    {(siteSettings?.categories || []).map((cat: any, index: number) => (
                                         <div key={cat.id} className="relative flex flex-col gap-3 bg-gray-50 p-5 rounded-3xl hover:bg-white hover:shadow-lg transition-all border border-transparent hover:border-primary/10 group">
                                             <button
                                                 onClick={() => {
@@ -867,7 +867,7 @@ const AdminDashboard = () => {
                                             className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/20 transition-all outline-none font-medium text-gray-700 appearance-none cursor-pointer"
                                         >
                                             <option value="" disabled>Select Primary Category</option>
-                                            {siteSettings.categories.map((cat: any) => (
+                                            {(siteSettings?.categories || []).map((cat: any) => (
                                                 <option key={cat.id} value={cat.id}>{cat.name}</option>
                                             ))}
                                         </select>

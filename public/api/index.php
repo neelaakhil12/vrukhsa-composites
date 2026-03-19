@@ -28,27 +28,25 @@ $method = $_SERVER['REQUEST_METHOD'];
 $input = json_decode(file_get_contents('php://input'), true);
 
 function parseProduct(&$p) {
-    $p['images'] = json_decode($p['images'], true) ?: [];
-    $p['variants'] = json_decode($p['variants'], true) ?: [];
-    $p['specifications'] = json_decode($p['specifications'], true) ?: (object)[];
-    $p['price'] = floatval($p['price']);
-    $p['originalPrice'] = floatval($p['originalPrice']);
-    $p['discountPercentage'] = floatval($p['discountPercentage']);
-    $p['rating'] = floatval($p['rating']);
-    $p['reviewCount'] = intval($p['reviewCount']);
-    $p['stockQuantity'] = intval($p['stockQuantity']);
-    $p['inStock'] = (bool)$p['inStock'];
-    $p['isSponsored'] = (bool)$p['isSponsored'];
-    $p['isDeleted'] = (bool)$p['isDeleted'];
+    if (isset($p['images'])) $p['images'] = json_decode($p['images'], true) ?: [];
+    if (isset($p['variants'])) $p['variants'] = json_decode($p['variants'], true) ?: [];
+    if (isset($p['availableOffers'])) $p['availableOffers'] = json_decode($p['availableOffers'], true) ?: [];
+    if (isset($p['specifications'])) $p['specifications'] = json_decode($p['specifications'], true) ?: (object)[];
+    $p['price'] = floatval($p['price'] ?? 0);
+    $p['originalPrice'] = floatval($p['originalPrice'] ?? 0);
+    $p['discountPercentage'] = floatval($p['discountPercentage'] ?? 0);
+    $p['rating'] = floatval($p['rating'] ?? 4.5);
+    $p['reviewCount'] = intval($p['reviewCount'] ?? 0);
+    $p['stockQuantity'] = intval($p['stockQuantity'] ?? 0);
+    $p['inStock'] = (bool)($p['inStock'] ?? true);
+    $p['isSponsored'] = (bool)($p['isSponsored'] ?? false);
+    $p['isDeleted'] = (bool)($p['isDeleted'] ?? false);
     $p['product_id'] = $p['id'];
     // Add missing array fields that the frontend Edit form expects
-    if (!isset($p['highlights']) || !is_array($p['highlights'])) $p['highlights'] = [];
-    if (!isset($p['benefits']) || !is_array($p['benefits'])) $p['benefits'] = [];
-    if (!isset($p['tags']) || !is_array($p['tags'])) $p['tags'] = [];
-    if (!isset($p['faqs']) || !is_array($p['faqs'])) $p['faqs'] = [];
-    if (!isset($p['features']) || !is_array($p['features'])) $p['features'] = [];
-    if (!isset($p['colors']) || !is_array($p['colors'])) $p['colors'] = [];
-    if (!isset($p['sizes']) || !is_array($p['sizes'])) $p['sizes'] = [];
+    foreach (['highlights', 'benefits', 'tags', 'faqs', 'features', 'colors', 'sizes', 'images', 'availableOffers', 'variants'] as $f) {
+        if (!isset($p[$f]) || !is_array($p[$f])) $p[$f] = [];
+    }
+    if (!isset($p['specifications']) || !is_object($p['specifications'])) $p['specifications'] = (object)[];
 }
 
 // GET /products
@@ -120,7 +118,21 @@ if (preg_match('#^/categories/?$#', $path)) {
 // SETTINGS
 $sf = __DIR__ . '/../server/src/data/site_settings.json';
 if (preg_match('#^/settings/?$#', $path)) {
-    if ($method === 'GET') { echo file_exists($sf) ? file_get_contents($sf) : '{}'; exit(); }
+    if ($method === 'GET') {
+        $data = file_exists($sf) ? json_decode(file_get_contents($sf), true) : [];
+        if (!$data || !isset($data['categories'])) {
+            $data = [
+                'banners' => [],
+                'categories' => [
+                    ['id' => 'natural fibers', 'name' => 'Natural Fibers'],
+                    ['id' => 'synthetic fibers', 'name' => 'Synthetic Fibers'],
+                    ['id' => 'nano products', 'name' => 'Nano Products']
+                ]
+            ];
+        }
+        echo json_encode($data);
+        exit();
+    }
     if ($method === 'PATCH' || $method === 'PUT') {
         $cur = file_exists($sf) ? json_decode(file_get_contents($sf), true) : [];
         $upd = array_merge($cur, $input ?? []);
