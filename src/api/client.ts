@@ -23,48 +23,47 @@ const MOCK_ADMIN_USER = {
 };
 
 export const fetchProducts = async (category?: string, search?: string, sale?: string) => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 500));
+    try {
+        const response = await api.get('/products');
+        let filteredProducts = response.data;
 
-    let filteredProducts = [...products];
-
-    if (category) {
-        filteredProducts = filteredProducts.filter(p => p.category === category.toLowerCase());
-    }
-
-    if (search) {
-        const query = search.toLowerCase();
-        filteredProducts = filteredProducts.filter(p =>
-            p.name.toLowerCase().includes(query) ||
-            p.description.toLowerCase().includes(query)
-        );
-    }
-
-    if (sale) {
-        // Simple logic for sale filter
-        if (sale === 'flash') {
-            filteredProducts = filteredProducts.filter(p => p.discountPercentage >= 30);
+        if (category) {
+            filteredProducts = filteredProducts.filter((p: any) => 
+                (p.category || '').toLowerCase() === category.toLowerCase() ||
+                (p.subCategory || '').toLowerCase() === category.toLowerCase()
+            );
         }
-    }
 
-    return filteredProducts;
+        if (search) {
+            const query = search.toLowerCase();
+            filteredProducts = filteredProducts.filter((p: any) =>
+                (p.name || p.product_name || '').toLowerCase().includes(query) ||
+                (p.description || '').toLowerCase().includes(query)
+            );
+        }
+
+        if (sale) {
+            if (sale === 'flash') {
+                filteredProducts = filteredProducts.filter((p: any) => (p.discountPercentage || 0) >= 30);
+            }
+        }
+
+        return filteredProducts;
+    } catch (error) {
+        console.error("Failed to fetch products from API", error);
+        return [];
+    }
 };
 
 export const fetchProductById = async (id: string) => {
-    // Simulate API delay
-    await new Promise(resolve => setTimeout(resolve, 200));
-
-    // Find local product first
-    const product = products.find(p => p.id === id);
-    if (product) return product;
-
-    // Fallback to API if not found locally (unlikely for now)
     try {
         const response = await api.get(`/products/${id}`);
         return response.data;
     } catch (error) {
-        console.error("Product not found locally or remotely", error);
-        return null;
+        console.error("Product not found on server", error);
+        // Temporary fallback to mock data only if API fails and we have it
+        const product = products.find(p => p.id === id);
+        return product || null;
     }
 };
 

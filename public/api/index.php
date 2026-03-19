@@ -120,13 +120,17 @@ $sf = __DIR__ . '/../server/src/data/site_settings.json';
 if (preg_match('#^/settings/?$#', $path)) {
     if ($method === 'GET') {
         $data = file_exists($sf) ? json_decode(file_get_contents($sf), true) : [];
-        if (!$data || !isset($data['categories'])) {
+        if (!$data || !isset($data['categories']) || count($data['categories']) <= 3) {
             $data = [
                 'banners' => [],
                 'categories' => [
-                    ['id' => 'natural fibers', 'name' => 'Natural Fibers'],
-                    ['id' => 'synthetic fibers', 'name' => 'Synthetic Fibers'],
-                    ['id' => 'nano products', 'name' => 'Nano Products']
+                    ['id' => 'natural fibers', 'name' => 'Natural Fibers', 'icon' => '🌿'],
+                    ['id' => 'synthetic fibers', 'name' => 'Synthetic Fibers', 'icon' => '🧵'],
+                    ['id' => 'nano products', 'name' => 'Nano Products', 'icon' => '🔬'],
+                    ['id' => 'chemical powders', 'name' => 'Chemical Powders', 'icon' => '🧪'],
+                    ['id' => 'resins', 'name' => 'Resins', 'icon' => '🧴'],
+                    ['id' => 'composite making', 'name' => 'Composite Making', 'icon' => '🛠️'],
+                    ['id' => 'additive nanoworks', 'name' => 'Additive NanoWorks', 'icon' => '⚗️']
                 ]
             ];
         }
