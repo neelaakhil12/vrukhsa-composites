@@ -41,6 +41,14 @@ function parseProduct(&$p) {
     $p['isSponsored'] = (bool)$p['isSponsored'];
     $p['isDeleted'] = (bool)$p['isDeleted'];
     $p['product_id'] = $p['id'];
+    // Add missing array fields that the frontend Edit form expects
+    if (!isset($p['highlights']) || !is_array($p['highlights'])) $p['highlights'] = [];
+    if (!isset($p['benefits']) || !is_array($p['benefits'])) $p['benefits'] = [];
+    if (!isset($p['tags']) || !is_array($p['tags'])) $p['tags'] = [];
+    if (!isset($p['faqs']) || !is_array($p['faqs'])) $p['faqs'] = [];
+    if (!isset($p['features']) || !is_array($p['features'])) $p['features'] = [];
+    if (!isset($p['colors']) || !is_array($p['colors'])) $p['colors'] = [];
+    if (!isset($p['sizes']) || !is_array($p['sizes'])) $p['sizes'] = [];
 }
 
 // GET /products
