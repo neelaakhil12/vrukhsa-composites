@@ -146,19 +146,25 @@ if (preg_match('#^/db-info/?$#', $path) && $method === 'GET') {
 if (preg_match('#^/settings/?$#', $path)) {
     if ($method === 'GET') {
         $data = file_exists($sf) ? json_decode(file_get_contents($sf), true) : [];
+        
+        // Ensure core categories and banners are present if file is empty or missing
         if (!$data || !isset($data['categories']) || count($data['categories']) < 5) {
-            $data = [
-                'banners' => [],
-                'categories' => [
-                    ['id' => 'natural fibers', 'name' => 'Natural Fibers', 'icon' => '🌿'],
-                    ['id' => 'synthetic fibers', 'name' => 'Synthetic Fibers', 'icon' => '🧵'],
-                    ['id' => 'nano products', 'name' => 'Nano Products', 'icon' => '🔬'],
-                    ['id' => 'chemical powders', 'name' => 'Chemical Powders', 'icon' => '🧪'],
-                    ['id' => 'resins', 'name' => 'Resins', 'icon' => '🧴'],
-                    ['id' => 'composite making', 'name' => 'Composite Making', 'icon' => '🛠️'],
-                    ['id' => 'additive nanoworks', 'name' => 'Additive NanoWorks', 'icon' => '⚗️']
-                ]
+            $defaultCategories = [
+                ['id' => 'natural fibers', 'name' => 'Natural Fibers', 'icon' => '🌿'],
+                ['id' => 'synthetic fibers', 'name' => 'Synthetic Fibers', 'icon' => '🧵'],
+                ['id' => 'nano products', 'name' => 'Nano Products', 'icon' => '🔬'],
+                ['id' => 'chemical powders', 'name' => 'Chemical Powders', 'icon' => '🧪'],
+                ['id' => 'resins', 'name' => 'Resins', 'icon' => '🧴'],
+                ['id' => 'composite making', 'name' => 'Composite Making', 'icon' => '🛠️'],
+                ['id' => 'additive nanoworks', 'name' => 'Additive NanoWorks', 'icon' => '⚗️']
             ];
+            
+            if (!$data) {
+                $data = ['banners' => [], 'categories' => $defaultCategories];
+            } else {
+                if (!isset($data['banners'])) $data['banners'] = [];
+                if (!isset($data['categories'])) $data['categories'] = $defaultCategories;
+            }
         }
 
         // DYNAMIC CATEGORIES: Fetch all unique categories from Product table
@@ -173,24 +179,57 @@ if (preg_match('#^/settings/?$#', $path)) {
                     $data['categories'][] = [
                         'id' => $catId,
                         'name' => ucwords($cat),
-                        'icon' => '📦' // Default icon for dynamic categories
+                        'icon' => '📦' // Default icon
                     ];
                     $existingIds[] = $catId;
                 }
             }
-        } catch (Exception $e) {
-            // Silently fail dynamic categories if table doesn't exist yet
-        }
+        } catch (Exception $e) {}
+
+        // SORT CATEGORIES: Long names at the end
+        usort($data['categories'], function($a, $b) {
+            return strlen($a['name']) - strlen($b['name']);
+        });
 
         echo json_encode($data);
         exit();
     }
-    if ($method === 'PATCH' || $method === 'PUT') {
-        $cur = file_exists($sf) ? json_decode(file_get_contents($sf), true) : [];
-        $upd = array_merge($cur, $input ?? []);
-        file_put_contents($sf, json_encode($upd, JSON_PRETTY_PRINT));
-        echo json_encode($upd); exit();
+    
+    if ($method === 'POST') {
+        $input = json_decode(file_get_contents('php://input'), true);
+        file_put_contents($sf, json_encode($input, JSON_PRETTY_PRINT));
+        echo json_encode(['message' => 'Settings updated']);
+        exit();
     }
+}
+
+// UPLOAD ENDPOINT
+if (preg_match('#^/upload/?$#', $path) && $method === 'POST') {
+    if (!isset($_FILES['file'])) {
+        http_response_code(400);
+        echo json_encode(['error' => 'No file uploaded']);
+        exit();
+    }
+
+    $uploadDir = __DIR__ . '/uploads/';
+    if (!file_exists($uploadDir)) {
+        mkdir($uploadDir, 0777, true);
+    }
+
+    $file = $_FILES['file'];
+    $fileName = time() . '_' . basename($file['name']);
+    $targetPath = $uploadDir . $fileName;
+
+    if (move_uploaded_file($file['tmp_name'], $targetPath)) {
+        echo json_encode([
+            'url' => '/api/uploads/' . $fileName,
+            'fileName' => $fileName
+        ]);
+    } else {
+        http_response_code(500);
+        echo json_encode(['error' => 'Failed to move uploaded file']);
+    }
+    exit();
 }
 
 // AUTH (mock)

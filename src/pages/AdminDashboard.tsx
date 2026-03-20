@@ -27,6 +27,7 @@ import {
     CreditCard
 } from 'lucide-react';
 import { toast } from 'sonner';
+import FileUpload from '@/components/FileUpload';
 
 const AdminDashboard = () => {
     const { user, isLoading: authLoading } = useAuth();
@@ -521,20 +522,18 @@ const AdminDashboard = () => {
                                                         )}
                                                     </div>
                                                 </div>
-                                                <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-4">
-                                                    <div className="md:col-span-2">
-                                                        <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Image URL</label>
-                                                        <input
-                                                            value={banner.image}
-                                                            onChange={(e) => {
-                                                                const newBanners = [...siteSettings.banners];
-                                                                newBanners[index].image = e.target.value;
-                                                                setSiteSettings({ ...siteSettings, banners: newBanners });
-                                                            }}
-                                                            className="w-full px-4 py-2.5 bg-white border border-gray-100 rounded-xl focus:ring-2 focus:ring-primary outline-none text-sm"
-                                                            placeholder="https://example.com/banner.jpg"
-                                                        />
-                                                    </div>
+                                                <div className="lg:col-span-3">
+                                                    <FileUpload
+                                                        label="Banner Image"
+                                                        value={banner.image}
+                                                        onUpload={(url) => {
+                                                            const newBanners = [...siteSettings.banners];
+                                                            newBanners[index].image = url;
+                                                            setSiteSettings({ ...siteSettings, banners: newBanners });
+                                                        }}
+                                                        placeholder="Upload banner image..."
+                                                    />
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                                     <div>
                                                         <label className="block text-xs font-bold text-gray-400 uppercase mb-2">Main Title</label>
                                                         <input
@@ -561,6 +560,7 @@ const AdminDashboard = () => {
                                                             placeholder="Secondary text..."
                                                         />
                                                     </div>
+                                                </div>
                                                 </div>
                                             </div>
                                             <button
@@ -610,29 +610,41 @@ const AdminDashboard = () => {
                                             >
                                                 <X size={14} />
                                             </button>
-                                            <div className="w-16 h-16 bg-white rounded-2xl flex items-center justify-center text-3xl shadow-sm self-center group-hover:scale-110 transition-transform">
-                                                <input
-                                                    value={cat.icon}
-                                                    onChange={(e) => {
-                                                        const newCats = [...siteSettings.categories];
-                                                        newCats[index].icon = e.target.value;
-                                                        setSiteSettings({ ...siteSettings, categories: newCats });
-                                                    }}
-                                                    className="w-full h-full text-center bg-transparent border-none outline-none cursor-pointer"
-                                                    maxLength={2}
-                                                />
-                                            </div>
-                                            <div className="text-center">
-                                                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1">Display Name</label>
-                                                <input
-                                                    value={cat.name}
-                                                    onChange={(e) => {
-                                                        const newCats = [...siteSettings.categories];
-                                                        newCats[index].name = e.target.value;
-                                                        setSiteSettings({ ...siteSettings, categories: newCats });
-                                                    }}
-                                                    className="w-full bg-transparent border-none outline-none text-xs font-black text-gray-700 text-center uppercase tracking-tighter"
-                                                />
+                                            <FileUpload
+                                                value={cat.image}
+                                                onUpload={(url) => {
+                                                    const newCats = [...siteSettings.categories];
+                                                    newCats[index].image = url;
+                                                    setSiteSettings({ ...siteSettings, categories: newCats });
+                                                }}
+                                                className="w-full"
+                                            />
+                                            <div className="flex gap-2 items-center">
+                                                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-xl shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
+                                                    <input
+                                                        value={cat.icon || '📦'}
+                                                        onChange={(e) => {
+                                                            const newCats = [...siteSettings.categories];
+                                                            newCats[index].icon = e.target.value;
+                                                            setSiteSettings({ ...siteSettings, categories: newCats });
+                                                        }}
+                                                        className="w-full h-full text-center bg-transparent border-none outline-none cursor-pointer"
+                                                        maxLength={2}
+                                                        title="Emoji Icon"
+                                                    />
+                                                </div>
+                                                <div className="flex-1">
+                                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 px-1">Display Name</label>
+                                                    <input
+                                                        value={cat.name}
+                                                        onChange={(e) => {
+                                                            const newCats = [...siteSettings.categories];
+                                                            newCats[index].name = e.target.value;
+                                                            setSiteSettings({ ...siteSettings, categories: newCats });
+                                                        }}
+                                                        className="w-full bg-gray-50 border border-transparent rounded-lg px-2 py-1 outline-none focus:border-primary/20 text-xs font-black text-gray-700 uppercase tracking-tighter"
+                                                    />
+                                                </div>
                                             </div>
                                         </div>
                                     ))}
@@ -1011,38 +1023,43 @@ const AdminDashboard = () => {
                                         </div>
                                     </div>
                                     <div className="md:col-span-2">
-                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Cover Image URL</label>
-                                        <div className="flex gap-4 items-center">
-                                            <input
-                                                type="text"
-                                                value={formData.images[0] || ''}
-                                                onChange={(e) => {
-                                                    const newImages = [...formData.images];
-                                                    newImages[0] = e.target.value;
-                                                    setFormData({ ...formData, images: newImages });
-                                                }}
-                                                placeholder="https://example.com/image.jpg"
-                                                className="flex-1 px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/20 transition-all outline-none font-medium placeholder:text-gray-300"
-                                            />
-                                            {formData.images[0] && (
-                                                <div className="w-16 h-16 rounded-xl overflow-hidden border">
-                                                    <img src={formData.images[0]} alt="Preview" className="w-full h-full object-cover" />
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="md:col-span-2">
-                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Extra Images (one URL per line)</label>
-                                        <textarea
-                                            rows={3}
-                                            value={formData.images.slice(1).join('\n')}
-                                            onChange={(e) => {
-                                                const extraLines = e.target.value.split('\n').filter(line => line.trim());
-                                                setFormData({ ...formData, images: [formData.images[0] || '', ...extraLines] });
+                                        <FileUpload
+                                            label="Cover Image"
+                                            value={formData.images[0] || ''}
+                                            onUpload={(url) => {
+                                                const newImages = [...formData.images];
+                                                newImages[0] = url;
+                                                setFormData({ ...formData, images: newImages });
                                             }}
-                                            placeholder="https://example.com/extra1.jpg&#10;https://example.com/extra2.jpg"
-                                            className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/20 transition-all outline-none font-medium placeholder:text-gray-300 resize-none"
+                                            placeholder="Upload product cover image..."
                                         />
+                                    </div>
+                                    <div className="md:col-span-2 space-y-4">
+                                        <div className="flex items-center justify-between px-1">
+                                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest">Additional Images</label>
+                                            <button
+                                                type="button"
+                                                onClick={() => setFormData({ ...formData, images: [...formData.images, ''] })}
+                                                className="text-primary hover:text-primary/80 flex items-center gap-1 text-xs font-bold uppercase"
+                                            >
+                                                <PlusCircle size={14} />
+                                                Add More
+                                            </button>
+                                        </div>
+                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                            {formData.images.slice(1).map((img, idx) => (
+                                                <FileUpload
+                                                    key={idx}
+                                                    value={img}
+                                                    onUpload={(url) => {
+                                                        const newImages = [...formData.images];
+                                                        newImages[idx + 1] = url;
+                                                        setFormData({ ...formData, images: newImages });
+                                                    }}
+                                                    placeholder={`Extra image ${idx + 1}`}
+                                                />
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
                             </form>
