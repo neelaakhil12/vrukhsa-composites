@@ -51,10 +51,21 @@ function parseProduct(&$p) {
 
 // GET /products
 if (preg_match('#^/products/?$#', $path) && $method === 'GET') {
-    $sql = "SELECT * FROM Product WHERE isDeleted = 0";
+    $showDeleted = (isset($_GET['showDeleted']) && ($_GET['showDeleted'] === 'true' || $_GET['showDeleted'] == 1));
+    $sql = "SELECT * FROM Product";
+    if (!$showDeleted) {
+        $sql .= " WHERE isDeleted = 0";
+    }
     $params = [];
-    if (!empty($_GET['category'])) { $sql .= " AND category = ?"; $params[] = $_GET['category']; }
-    if (!empty($_GET['search'])) { $sql .= " AND (name LIKE ? OR description LIKE ?)"; $params[] = "%{$_GET['search']}%"; $params[] = "%{$_GET['search']}%"; }
+    if (!empty($_GET['category'])) { 
+        $sql .= ($showDeleted ? " WHERE " : " AND ") . "category = ?"; 
+        $params[] = $_GET['category']; 
+    }
+    if (!empty($_GET['search'])) { 
+        $sql .= (strpos($sql, 'WHERE') === false ? " WHERE " : " AND ") . "(name LIKE ? OR description LIKE ?)"; 
+        $params[] = "%{$_GET['search']}%"; 
+        $params[] = "%{$_GET['search']}%"; 
+    }
     $stmt = $pdo->prepare($sql);
     $stmt->execute($params);
     $products = $stmt->fetchAll(PDO::FETCH_ASSOC);
@@ -116,7 +127,7 @@ if (preg_match('#^/categories/?$#', $path)) {
 }
 
 // SETTINGS
-$sf = __DIR__ . '/../server/src/data/site_settings.json';
+$sf = __DIR__ . '/../../server/src/data/site_settings.json';
 // DIAGNOSTIC ROUTE: GET /api/db-info
 if (preg_match('#^/db-info/?$#', $path) && $method === 'GET') {
     try {
