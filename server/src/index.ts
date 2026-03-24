@@ -3,12 +3,14 @@ import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
+import path from 'path';
 import { productRouter } from './routes/productRoutes';
 import { authRouter } from './routes/authRoutes';
 import { cartRouter } from './routes/cartRoutes';
 import { orderRouter } from './routes/orderRoutes';
 import settingsRouter from './routes/settingsRoutes';
-import paymentRouter from './routes/paymentRoutes';
+import { paymentRouter } from './routes/paymentRoutes';
+import { uploadRouter } from './routes/uploadRoutes';
 
 dotenv.config();
 
@@ -25,6 +27,8 @@ const allowedOrigins = [
     'http://localhost:8083',
     'http://localhost:8084',
     'http://localhost:5173',
+    'https://indigo-rail-928301.hostingersite.com',
+    'http://indigo-rail-928301.hostingersite.com',
     process.env.FRONTEND_URL
 ].filter(Boolean);
 
@@ -43,8 +47,8 @@ app.use(cors({
             return callback(null, true);
         }
 
-        // Also allow any vercel.app domain
-        if (origin.endsWith('.vercel.app')) {
+        // Also allow any vercel.app or hostingersite.com domain
+        if (origin.endsWith('.vercel.app') || origin.endsWith('.hostingersite.com')) {
             return callback(null, true);
         }
 
@@ -62,6 +66,10 @@ app.use('/api/cart', cartRouter);
 app.use('/api/orders', orderRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/payment', paymentRouter);
+app.use('/api/upload', uploadRouter);
+
+// Serve static files (uploads)
+app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 // Health Check
 app.get('/', (req: Request, res: Response) => {

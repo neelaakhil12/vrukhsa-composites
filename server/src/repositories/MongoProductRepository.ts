@@ -3,12 +3,16 @@ import { IProductRepository } from './IProductRepository';
 
 export class MongoProductRepository implements IProductRepository {
     async findAll(filters: any = {}): Promise<IProduct[]> {
+        const { showDeleted, ...allFilters } = filters;
+        if (showDeleted === 'true' || showDeleted === true) {
+            return await Product.find(allFilters);
+        }
         // Exclude soft-deleted products by default
-        return await Product.find({ ...filters, isDeleted: { $ne: true } });
+        return await Product.find({ ...allFilters, isDeleted: { $ne: true } });
     }
 
     async findById(id: string): Promise<IProduct | null> {
-        return await Product.findOne({ _id: id, isDeleted: { $ne: true } });
+        return await Product.findOne({ _id: id });
     }
 
     async create(data: Partial<IProduct>): Promise<IProduct> {

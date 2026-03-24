@@ -26,3 +26,8 @@ dist-ssr
 # Sensitive files
 server/.env
 .env
+
+# Server Artifacts
+server/node_modules
+server/dist
+server/public/uploads

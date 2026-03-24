@@ -69,7 +69,7 @@ const AdminDashboard = () => {
         try {
             setIsLoading(true);
             const [{ data: productsData }, { data: settingsData }, { data: ordersData }] = await Promise.all([
-                api.get('/products'),
+                api.get('/products?showDeleted=true'),
                 api.get('/settings'),
                 api.get('/orders/admin/all')
             ]);

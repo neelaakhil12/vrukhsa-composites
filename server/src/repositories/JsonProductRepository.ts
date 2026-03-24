@@ -17,7 +17,12 @@ export class JsonProductRepository implements IProductRepository {
 
     async findAll(filters: any = {}): Promise<IProduct[]> {
         const data = await this.readData();
-        let products = data.products.filter((p: any) => !p.isDeleted);
+        const showDeleted = filters.showDeleted === 'true' || filters.showDeleted === true;
+        let products = data.products;
+        
+        if (!showDeleted) {
+            products = products.filter((p: any) => !p.isDeleted);
+        }
 
         // Basic filtering logic
         if (filters.category) {
@@ -29,7 +34,7 @@ export class JsonProductRepository implements IProductRepository {
 
     async findById(id: string): Promise<IProduct | null> {
         const data = await this.readData();
-        return data.products.find((p: any) => p.product_id === id && !p.isDeleted) || null;
+        return data.products.find((p: any) => p.product_id === id) || null;
     }
 
     async create(data: Partial<IProduct>): Promise<IProduct> {
