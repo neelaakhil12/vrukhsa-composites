@@ -8,9 +8,9 @@ import Cart from '../models/Cart';
 export const createOrder = async (req: Request, res: Response) => {
     try {
         const userId = (req as any).user._id;
+        const userEmail = (req as any).user.email;
         const { shippingAddress, paymentMethod = 'COD' } = req.body;
 
-        // Get user's cart
         const cart = await Cart.findOne({ userId }).populate('items.productId');
 
         if (!cart || cart.items.length === 0) {
@@ -18,7 +18,6 @@ export const createOrder = async (req: Request, res: Response) => {
             return;
         }
 
-        // Transform cart items to order items
         const orderItems = cart.items.map((item: any) => {
             const product = item.productId;
             return {
@@ -30,24 +29,37 @@ export const createOrder = async (req: Request, res: Response) => {
             };
         });
 
-        // Calculate total
         const totalAmount = orderItems.reduce(
             (sum: number, item: any) => sum + (item.price * item.quantity),
             0
         );
 
-        // Create order
+        // Calculate expected delivery: 4-5 business days from now
+        const expectedDeliveryDate = new Date();
+        expectedDeliveryDate.setDate(expectedDeliveryDate.getDate() + 5);
+
         const order = await Order.create({
             userId,
             items: orderItems,
-            shippingAddress,
+            shippingAddress: {
+                ...shippingAddress,
+                email: userEmail || shippingAddress.email || ''
+            },
             paymentMethod,
-            paymentStatus: paymentMethod === 'COD' ? 'pending' : 'pending',
+            paymentStatus: 'pending',
             orderStatus: 'placed',
-            totalAmount
+            totalAmount,
+            expectedDeliveryDate,
+            deliveryStages: [
+                { status: 'placed', label: 'Order Placed', isCompleted: true, completedAt: new Date() },
+                { status: 'confirmed', label: 'Order Confirmed', isCompleted: false },
+                { status: 'processing', label: 'Processing & Packing', isCompleted: false },
+                { status: 'shipped', label: 'Shipped', isCompleted: false },
+                { status: 'out_for_delivery', label: 'Out for Delivery', isCompleted: false },
+                { status: 'delivered', label: 'Delivered', isCompleted: false },
+            ]
         });
 
-        // Clear cart after order
         cart.items = [];
         await cart.save();
 
@@ -71,13 +83,19 @@ export const getMyOrders = async (req: Request, res: Response) => {
     }
 };
 
-// @desc    Get order by ID
+// @desc    Get order by ID (for user or admin)
 // @route   GET /api/orders/:id
 // @access  Private
 export const getOrderById = async (req: Request, res: Response) => {
     try {
-        const userId = (req as any).user._id;
-        const order = await Order.findOne({ _id: req.params.id, userId });
+        const reqUser = (req as any).user;
+        let order;
+
+        if (reqUser.role === 'admin') {
+            order = await Order.findById(req.params.id).populate('userId', 'name email');
+        } else {
+            order = await Order.findOne({ _id: req.params.id, userId: reqUser._id });
+        }
 
         if (!order) {
             res.status(404).json({ message: 'Order not found' });
@@ -103,13 +121,16 @@ export const cancelOrder = async (req: Request, res: Response) => {
             return;
         }
 
-        // Can only cancel if not shipped yet
         if (['shipped', 'delivered'].includes(order.orderStatus)) {
             res.status(400).json({ message: 'Cannot cancel shipped or delivered orders' });
             return;
         }
 
         order.orderStatus = 'cancelled';
+        const cancelledStage = order.deliveryStages.find((s: any) => s.status === 'cancelled');
+        if (!cancelledStage) {
+            order.deliveryStages.push({ status: 'cancelled', label: 'Cancelled', isCompleted: true, completedAt: new Date() } as any);
+        }
         await order.save();
 
         res.json(order);
@@ -124,7 +145,7 @@ export const cancelOrder = async (req: Request, res: Response) => {
 export const getAllOrders = async (req: Request, res: Response) => {
     try {
         const orders = await Order.find({})
-            .populate('userId', 'name email')
+            .populate('userId', 'name email phone')
             .sort({ createdAt: -1 });
         res.json(orders);
     } catch (error) {
@@ -145,7 +166,13 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
             return;
         }
 
-        order.orderStatus = orderStatus;
+        order.orderStatus = orderStatus as any;
+        // Auto-mark delivery stage as completed
+        const stage = order.deliveryStages.find((s: any) => s.status === orderStatus);
+        if (stage) {
+            (stage as any).isCompleted = true;
+            (stage as any).completedAt = (stage as any).completedAt || new Date();
+        }
         await order.save();
 
         res.json(order);
@@ -167,9 +194,36 @@ export const updatePaymentStatus = async (req: Request, res: Response) => {
             return;
         }
 
-        order.paymentStatus = paymentStatus;
+        order.paymentStatus = paymentStatus as any;
         await order.save();
 
+        res.json(order);
+    } catch (error) {
+        res.status(500).json({ message: 'Server Error', error });
+    }
+};
+
+// @desc    Update order tracking info (Admin only)
+// @route   PUT /api/orders/:id/tracking
+// @access  Private/Admin
+export const updateOrderTracking = async (req: Request, res: Response) => {
+    try {
+        const { trackingNumber, trackingLink, trackingPlatform, expectedDeliveryDate, internalNote, deliveryStages } = req.body;
+        const order = await Order.findById(req.params.id);
+
+        if (!order) {
+            res.status(404).json({ message: 'Order not found' });
+            return;
+        }
+
+        if (trackingNumber !== undefined) order.trackingNumber = trackingNumber;
+        if (trackingLink !== undefined) order.trackingLink = trackingLink;
+        if (trackingPlatform !== undefined) order.trackingPlatform = trackingPlatform;
+        if (expectedDeliveryDate !== undefined) order.expectedDeliveryDate = new Date(expectedDeliveryDate);
+        if (internalNote !== undefined) order.internalNote = internalNote;
+        if (deliveryStages !== undefined) order.deliveryStages = deliveryStages;
+
+        await order.save();
         res.json(order);
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error });

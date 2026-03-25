@@ -105,10 +105,6 @@ const Header = () => {
             </Link>
           )}
 
-          {/* Become a Seller */}
-          <Link to="/seller" className="text-primary-foreground hover:text-primary-foreground/80 font-medium">
-            Become a Seller
-          </Link>
 
           {/* Help */}
           <button className="flex items-center gap-1 text-primary-foreground hover:text-primary-foreground/80">
@@ -190,9 +186,6 @@ const Header = () => {
                 </Link>
               )}
               <div className="border-t border-border my-2" />
-              <Link to="/seller" className="flex items-center gap-3 px-4 py-3 hover:bg-muted" onClick={() => setMobileMenuOpen(false)}>
-                Become a Seller
-              </Link>
               <button className="flex items-center gap-3 px-4 py-3 hover:bg-muted w-full text-left">
                 <HelpCircle size={20} /> Help
               </button>

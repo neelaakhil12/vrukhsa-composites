@@ -11,10 +11,19 @@ export interface IOrderItem {
 export interface IShippingAddress {
     fullName: string;
     phone: string;
+    email?: string;
     address: string;
     city: string;
     state: string;
     pincode: string;
+}
+
+export interface IDeliveryStage {
+    status: 'placed' | 'confirmed' | 'processing' | 'shipped' | 'out_for_delivery' | 'delivered' | 'cancelled';
+    label: string;
+    completedAt?: Date;
+    note?: string;
+    isCompleted: boolean;
 }
 
 export interface IOrder extends Document {
@@ -23,11 +32,18 @@ export interface IOrder extends Document {
     shippingAddress: IShippingAddress;
     paymentMethod: 'COD' | 'CARD' | 'UPI' | 'RAZORPAY';
     paymentStatus: 'pending' | 'paid' | 'failed';
-    orderStatus: 'placed' | 'confirmed' | 'shipped' | 'delivered' | 'cancelled';
+    orderStatus: 'placed' | 'confirmed' | 'processing' | 'shipped' | 'out_for_delivery' | 'delivered' | 'cancelled';
     totalAmount: number;
     razorpayOrderId?: string;
     razorpayPaymentId?: string;
     razorpaySignature?: string;
+    // Tracking fields
+    trackingNumber?: string;
+    trackingLink?: string;
+    trackingPlatform?: string;
+    expectedDeliveryDate?: Date;
+    deliveryStages: IDeliveryStage[];
+    internalNote?: string;
     createdAt: Date;
 }
 
@@ -42,11 +58,29 @@ const OrderItemSchema = new Schema({
 const ShippingAddressSchema = new Schema({
     fullName: { type: String, required: true },
     phone: { type: String, required: true },
+    email: { type: String },
     address: { type: String, required: true },
     city: { type: String, required: true },
     state: { type: String, required: true },
     pincode: { type: String, required: true }
 }, { _id: false });
+
+const DeliveryStageSchema = new Schema({
+    status: { type: String, required: true },
+    label: { type: String, required: true },
+    completedAt: { type: Date },
+    note: { type: String },
+    isCompleted: { type: Boolean, default: false }
+}, { _id: false });
+
+const DEFAULT_STAGES: IDeliveryStage[] = [
+    { status: 'placed', label: 'Order Placed', isCompleted: false },
+    { status: 'confirmed', label: 'Order Confirmed', isCompleted: false },
+    { status: 'processing', label: 'Processing & Packing', isCompleted: false },
+    { status: 'shipped', label: 'Shipped', isCompleted: false },
+    { status: 'out_for_delivery', label: 'Out for Delivery', isCompleted: false },
+    { status: 'delivered', label: 'Delivered', isCompleted: false },
+];
 
 const OrderSchema: Schema = new Schema({
     userId: { type: Schema.Types.ObjectId, ref: 'User', required: true },
@@ -64,13 +98,20 @@ const OrderSchema: Schema = new Schema({
     },
     orderStatus: {
         type: String,
-        enum: ['placed', 'confirmed', 'shipped', 'delivered', 'cancelled'],
+        enum: ['placed', 'confirmed', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'cancelled'],
         default: 'placed'
     },
     totalAmount: { type: Number, required: true },
     razorpayOrderId: String,
     razorpayPaymentId: String,
-    razorpaySignature: String
+    razorpaySignature: String,
+    // Tracking
+    trackingNumber: { type: String },
+    trackingLink: { type: String },
+    trackingPlatform: { type: String },
+    expectedDeliveryDate: { type: Date },
+    deliveryStages: { type: [DeliveryStageSchema], default: DEFAULT_STAGES },
+    internalNote: { type: String },
 }, {
     timestamps: true
 });

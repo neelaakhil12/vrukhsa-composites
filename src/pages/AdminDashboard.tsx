@@ -740,12 +740,20 @@ const AdminDashboard = () => {
                                                                 {order.orderStatus}
                                                             </span>
                                                         </td>
-                                                        <td className="px-6 py-4 text-right">
+                                                        <td className="px-6 py-4 text-right flex items-center justify-end gap-2">
                                                             <Link
                                                                 to={`/admin/orders/${order._id}`}
                                                                 className="p-2 text-primary hover:bg-primary/5 rounded-lg transition-all"
+                                                                title="View Details"
                                                             >
                                                                 <Eye size={18} />
+                                                            </Link>
+                                                            <Link
+                                                                to={`/admin/orders/${order._id}/tracking`}
+                                                                className="p-2 text-white bg-primary hover:bg-primary/90 rounded-lg transition-all text-[10px] font-black uppercase tracking-widest px-3"
+                                                                title="Manage Tracking"
+                                                            >
+                                                                <Truck size={14} />
                                                             </Link>
                                                         </td>
                                                     </tr>

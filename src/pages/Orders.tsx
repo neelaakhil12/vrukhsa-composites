@@ -239,10 +239,10 @@ const Orders = () => {
                   {/* Order Actions */}
                   <div className="p-4 border-t border-border bg-muted/50 flex flex-wrap gap-4">
                     <Link
-                      to={`/order-confirmation/${order._id}`}
-                      className="text-sm text-primary hover:underline"
+                      to={`/orders/${order._id}`}
+                      className="text-sm text-primary hover:underline font-bold"
                     >
-                      View Order Details
+                      Track Order →
                     </Link>
                     {['placed', 'confirmed'].includes(order.orderStatus) && (
                       <button

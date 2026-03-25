@@ -40,7 +40,8 @@ const ProductForm = () => {
         stockQuantity: '0',
         warranty: '',
         isSponsored: false,
-        seller: 'Vruksha Composites'
+        seller: 'Vruksha Composites',
+        deliveryTime: '4-5 business days'
     });
 
     // Custom UI for adding specifications (replacing prompt)
@@ -69,7 +70,8 @@ const ProductForm = () => {
                         stockQuantity: product.stockQuantity?.toString() || '0',
                         warranty: product.warranty || '',
                         isSponsored: !!product.isSponsored,
-                        seller: product.seller || 'Vruksha Composites'
+                        seller: product.seller || 'Vruksha Composites',
+                        deliveryTime: product.deliveryTime || '4-5 business days'
                     });
                 }
             } catch (error) {
@@ -289,6 +291,17 @@ const ProductForm = () => {
                                         value={formData.warranty}
                                         onChange={(e) => setFormData({ ...formData, warranty: e.target.value })}
                                         placeholder="e.g. 1 Year Manufacturer Warranty"
+                                        className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/20 transition-all outline-none font-bold text-gray-600"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-3 px-1">Expected Delivery Time</label>
+                                    <input
+                                        type="text"
+                                        value={formData.deliveryTime}
+                                        onChange={(e) => setFormData({ ...formData, deliveryTime: e.target.value })}
+                                        placeholder="e.g. 4-5 business days"
                                         className="w-full px-6 py-4 bg-gray-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/20 transition-all outline-none font-bold text-gray-600"
                                     />
                                 </div>

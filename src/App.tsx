@@ -16,12 +16,13 @@ import Orders from "./pages/Orders";
 import Account from "./pages/Account";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/Login";
-import BecomeSeller from "./pages/BecomeSeller";
 import AdminDashboard from "./pages/AdminDashboard";
 import CmsPage from "./pages/CmsPage";
+import OrderTracking from "./pages/OrderTracking";
 
 import ProductForm from "./pages/admin/ProductForm";
 import OrderDetailPage from "./pages/admin/OrderDetailPage";
+import AdminOrderTrackingPage from "./pages/admin/AdminOrderTrackingPage";
 
 const queryClient = new QueryClient();
 
@@ -42,12 +43,13 @@ const App = () => (
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/order-confirmation/:orderId" element={<OrderConfirmation />} />
               <Route path="/orders" element={<Orders />} />
+              <Route path="/orders/:orderId" element={<OrderTracking />} />
               <Route path="/account" element={<Account />} />
-              <Route path="/seller" element={<BecomeSeller />} />
               <Route path="/admin" element={<AdminDashboard />} />
               <Route path="/admin/products/new" element={<ProductForm />} />
               <Route path="/admin/products/edit/:productId" element={<ProductForm />} />
               <Route path="/admin/orders/:orderId" element={<OrderDetailPage />} />
+              <Route path="/admin/orders/:orderId/tracking" element={<AdminOrderTrackingPage />} />
 
               <Route path="/about" element={<CmsPage pageType="aboutUs" title="About Us" />} />
               <Route path="/privacy" element={<CmsPage pageType="privacyPolicy" title="Privacy Policy" />} />

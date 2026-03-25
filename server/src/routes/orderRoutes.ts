@@ -7,7 +7,8 @@ import {
     cancelOrder,
     getAllOrders,
     updateOrderStatus,
-    updatePaymentStatus
+    updatePaymentStatus,
+    updateOrderTracking
 } from '../controllers/orderController';
 import { admin } from '../middleware/authMiddleware';
 
@@ -25,5 +26,6 @@ router.put('/:id/cancel', cancelOrder);
 router.get('/admin/all', admin, getAllOrders);
 router.put('/:id/status', admin, updateOrderStatus);
 router.put('/:id/payment', admin, updatePaymentStatus);
+router.put('/:id/tracking', admin, updateOrderTracking);
 
 export const orderRouter = router;

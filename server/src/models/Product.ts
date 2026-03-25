@@ -44,6 +44,7 @@ const ProductSchema: Schema = new Schema({
     warranty: { type: String },
     seller: { type: String },
     isSponsored: { type: Boolean, default: false },
+    deliveryTime: { type: String, default: '4-5 business days' },
     isDeleted: { type: Boolean, default: false, index: true }
 }, {
     timestamps: true,
