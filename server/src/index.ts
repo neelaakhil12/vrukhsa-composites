@@ -1,5 +1,4 @@
 import express, { Request, Response } from 'express';
-import mongoose from 'mongoose';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
@@ -11,12 +10,12 @@ import { orderRouter } from './routes/orderRoutes';
 import settingsRouter from './routes/settingsRoutes';
 import { paymentRouter } from './routes/paymentRoutes';
 import { uploadRouter } from './routes/uploadRoutes';
+import prisma from './lib/prisma';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/flipkart_clone';
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:8080';
 
 // Middleware
@@ -73,20 +72,14 @@ app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
 // Health Check
 app.get('/', (req: Request, res: Response) => {
-    res.send('Flipkart Clone API is running');
+    res.send('Vruksha Composites API is running');
 });
 
-// Connect to MongoDB (Optional for Local JSON Mode)
-mongoose.connect(MONGODB_URI)
-    .then(() => {
-        console.log('✅ Connected to MongoDB');
-    })
-    .catch((err) => {
-        console.warn('⚠️ MongoDB connection failed. Running in Local JSON mode.');
-        // console.error('❌ MongoDB connection error:', err);
-    });
+// Test DB Connection
+prisma.$connect()
+    .then(() => console.log('✅ Connected to MySQL Database (Prisma)'))
+    .catch((err) => console.error('❌ MySQL/Prisma connection failed:', err));
 
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
-    console.log(`📂 Data Mode: ${process.env.DATA_MODE === 'cloud' ? 'Cloud (MongoDB)' : 'Local (JSON)'}`);
 });

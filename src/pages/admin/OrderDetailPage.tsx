@@ -128,6 +128,13 @@ const OrderDetailPage = () => {
                                 >
                                     Print Invoice
                                 </button>
+                                <button 
+                                    onClick={() => navigate(`/admin/orders/${order.id || order._id}/tracking`)}
+                                    className="px-6 py-3 bg-primary text-white rounded-xl font-bold text-sm shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all flex items-center gap-2"
+                                >
+                                    <Truck size={18} />
+                                    Manage Tracking
+                                </button>
                             </div>
                         </div>
 

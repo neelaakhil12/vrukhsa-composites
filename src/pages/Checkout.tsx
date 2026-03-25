@@ -321,7 +321,7 @@ const Checkout = () => {
                 </div>
                 <div className="flex justify-between text-sm">
                   <span>Delivery</span>
-                  <span className="text-success">Free</span>
+                  <span className="text-foreground italic text-xs">Standard Shipping</span>
                 </div>
               </div>
 
@@ -340,7 +340,7 @@ const Checkout = () => {
 
               <div className="flex items-center gap-2 mt-4 text-sm text-muted-foreground">
                 <Truck size={16} />
-                <span>Free delivery on all orders</span>
+                <span>Standard delivery on all orders</span>
               </div>
             </div>
           </div>

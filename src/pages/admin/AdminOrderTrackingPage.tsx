@@ -150,7 +150,7 @@ const AdminOrderTrackingPage = () => {
                         <ChevronLeft size={18} /> Admin
                     </button>
                     <h1 className="font-black text-gray-900 text-sm uppercase tracking-widest">
-                        Order #{order._id.slice(-8).toUpperCase()}
+                        Order #{String(order.id || order._id).slice(-8).toUpperCase()}
                     </h1>
                     <button
                         onClick={fetchOrder}
@@ -343,7 +343,7 @@ const AdminOrderTrackingPage = () => {
                         <div className="space-y-3">
                             <div className="flex justify-between">
                                 <span className="text-xs text-gray-400 font-bold uppercase tracking-widest">Order ID</span>
-                                <span className="font-mono font-black text-xs text-gray-700">#{order._id.slice(-8).toUpperCase()}</span>
+                                <span className="font-mono font-black text-xs text-gray-700">#{String(order.id || order._id).slice(-8).toUpperCase()}</span>
                             </div>
                             <div className="flex justify-between">
                                 <span className="text-xs text-gray-400 font-bold uppercase tracking-widest">Date</span>

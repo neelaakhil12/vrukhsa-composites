@@ -69,7 +69,7 @@ const ProductCard = ({ product, layout = 'grid' }: ProductCardProps) => {
             <span className="price-discount">{product.discountPercentage}% off</span>
           </div>
           <p className="text-xs text-muted-foreground mt-2">
-            Free delivery by Tomorrow
+            Delivery within 4-5 business days
           </p>
         </div>
         <div className="flex flex-col gap-2">

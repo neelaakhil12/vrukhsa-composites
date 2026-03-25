@@ -139,9 +139,8 @@ const Cart = () => {
                     </div>
 
                     <div className="hidden sm:block text-right">
-                      <p className="text-xs text-muted-foreground">Delivery by</p>
-                      <p className="font-medium text-sm">Tomorrow</p>
-                      <p className="text-xs text-success">Free</p>
+                      <p className="text-xs text-muted-foreground">Delivery within</p>
+                      <p className="font-medium text-sm">4-5 business days</p>
                     </div>
                   </div>
                 ))}
@@ -178,7 +177,7 @@ const Cart = () => {
 
                 <div className="flex justify-between">
                   <span>Delivery Charges</span>
-                  <span className="text-success">Free</span>
+                  <span className="text-foreground italic text-xs">Calculated at checkout</span>
                 </div>
 
                 <div className="border-t border-dashed border-border pt-4">
@@ -218,7 +217,7 @@ const Cart = () => {
                   className="w-8 h-8"
                 />
                 <p className="text-sm">
-                  Safe and Secure Payments. Easy returns. 100% Authentic products.
+                  Safe and Secure Payments. 100% Authentic products.
                 </p>
               </div>
             </div>

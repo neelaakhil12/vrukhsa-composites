@@ -283,15 +283,8 @@ const ProductDetail = () => {
                 <div className="flex items-center gap-3">
                   <Truck className="text-primary" size={24} />
                   <div>
-                    <p className="font-medium text-sm">Free Delivery</p>
-                    <p className="text-xs text-muted-foreground">By Tomorrow</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3">
-                  <RotateCcw className="text-primary" size={24} />
-                  <div>
-                    <p className="font-medium text-sm">7 Days Return</p>
-                    <p className="text-xs text-muted-foreground">Policy</p>
+                    <p className="font-medium text-sm">Delivery within 4-5 business days</p>
+                    <p className="text-xs text-muted-foreground">Standard Shipping</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3">

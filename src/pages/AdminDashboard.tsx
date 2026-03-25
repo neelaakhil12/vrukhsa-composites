@@ -722,8 +722,8 @@ const AdminDashboard = () => {
                                                 </tr>
                                             ) : (
                                                 orders.map((order) => (
-                                                    <tr key={order._id} className="hover:bg-gray-50/50 transition-colors">
-                                                        <td className="px-6 py-4 font-mono text-xs text-gray-500">#{order._id.slice(-8).toUpperCase()}</td>
+                                                    <tr key={order.id || order._id} className="hover:bg-gray-50/50 transition-colors">
+                                                        <td className="px-6 py-4 font-mono text-xs text-gray-500">#{String(order.id || order._id).slice(-8).toUpperCase()}</td>
                                                         <td className="px-6 py-4">
                                                             <p className="font-bold text-gray-900">{order.userId?.name || 'Guest'}</p>
                                                             <p className="text-xs text-gray-400">{order.userId?.email || 'N/A'}</p>
@@ -742,14 +742,14 @@ const AdminDashboard = () => {
                                                         </td>
                                                         <td className="px-6 py-4 text-right flex items-center justify-end gap-2">
                                                             <Link
-                                                                to={`/admin/orders/${order._id}`}
+                                                                to={`/admin/orders/${order.id || order._id}`}
                                                                 className="p-2 text-primary hover:bg-primary/5 rounded-lg transition-all"
                                                                 title="View Details"
                                                             >
                                                                 <Eye size={18} />
                                                             </Link>
                                                             <Link
-                                                                to={`/admin/orders/${order._id}/tracking`}
+                                                                to={`/admin/orders/${order.id || order._id}/tracking`}
                                                                 className="p-2 text-white bg-primary hover:bg-primary/90 rounded-lg transition-all text-[10px] font-black uppercase tracking-widest px-3"
                                                                 title="Manage Tracking"
                                                             >
