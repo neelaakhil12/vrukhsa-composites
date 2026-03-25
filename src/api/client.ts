@@ -1,6 +1,5 @@
 import axios from 'axios';
 import { products } from '@/data/products';
-import siteSettings from '@/data/site_settings.json';
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
@@ -127,24 +126,13 @@ export const cancelOrderAPI = async (orderId: string) => {
 
 // Settings API
 export const fetchSettings = async () => {
-    try {
-        const response = await api.get('/settings');
-        return response.data;
-    } catch (error) {
-        console.warn('⚠️ Backend settings API failed, falling back to local site_settings.json');
-        return siteSettings;
-    }
+    const response = await api.get('/settings');
+    return response.data;
 };
 
 export const updateSettingsAPI = async (settings: any) => {
-    try {
-        const response = await api.patch('/settings', settings);
-        return response.data;
-    } catch (error) {
-        console.error('Failed to update settings on server', error);
-        // In local mode, we just return the settings back as if saved
-        return settings;
-    }
+    const response = await api.patch('/settings', settings);
+    return response.data;
 };
 
 // Payment API

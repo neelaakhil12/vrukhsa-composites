@@ -1,28 +1,20 @@
 import express, { Request, Response } from 'express';
 import multer from 'multer';
-import path from 'path';
-import fs from 'fs';
+import { v2 as cloudinary } from 'cloudinary';
+import { Readable } from 'stream';
 
 const router = express.Router();
 
-// Ensure uploads directory exists
-const uploadDir = path.join(__dirname, '../../public/uploads');
-if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
-}
-
-// Multer storage configuration
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1e9);
-        cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-    }
+// Configure Cloudinary
+cloudinary.config({
+    cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+    api_key: process.env.CLOUDINARY_API_KEY,
+    api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-// File filter to allow only images
+// Use memory storage (not disk) so we can pipe to Cloudinary
+const storage = multer.memoryStorage();
+
 const fileFilter = (req: any, file: any, cb: any) => {
     if (file.mimetype.startsWith('image/')) {
         cb(null, true);
@@ -32,30 +24,52 @@ const fileFilter = (req: any, file: any, cb: any) => {
 };
 
 const upload = multer({
-    storage: storage,
-    limits: {
-        fileSize: 5 * 1024 * 1024 // 5MB limit
-    },
-    fileFilter: fileFilter
+    storage,
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5MB limit
+    fileFilter,
 });
 
-// POST /api/upload - Handle file upload
-router.post('/', upload.single('file'), (req: Request, res: Response) => {
+// POST /api/upload - Upload file to Cloudinary
+router.post('/', upload.single('file'), async (req: Request, res: Response) => {
     try {
         if (!req.file) {
             return res.status(400).json({ message: 'No file uploaded' });
         }
 
-        // Generate the URL for the uploaded file
-        const url = `/uploads/${req.file.filename}`;
+        // Check if Cloudinary is configured
+        if (!process.env.CLOUDINARY_CLOUD_NAME || !process.env.CLOUDINARY_API_KEY || !process.env.CLOUDINARY_API_SECRET) {
+            return res.status(503).json({
+                message: 'Image upload is not configured. Please add CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET to your server .env file.'
+            });
+        }
+
+        // Upload to Cloudinary via stream
+        const result = await new Promise<any>((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+                {
+                    folder: 'vruksha-composites',
+                    resource_type: 'image',
+                    transformation: [{ quality: 'auto', fetch_format: 'auto' }],
+                },
+                (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                }
+            );
+            const readable = new Readable();
+            readable.push(req.file!.buffer);
+            readable.push(null);
+            readable.pipe(uploadStream);
+        });
 
         res.status(201).json({
             message: 'File uploaded successfully',
-            url: url,
-            filename: req.file.filename
+            url: result.secure_url,
+            publicId: result.public_id,
         });
-    } catch (error) {
-        res.status(500).json({ message: 'Upload failed', error });
+    } catch (error: any) {
+        console.error('Upload error:', error);
+        res.status(500).json({ message: 'Upload failed', error: error.message });
     }
 });
 
