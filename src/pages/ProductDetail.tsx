@@ -315,6 +315,7 @@ const ProductDetail = () => {
             </div>
 
             {/* Seller Info */}
+            {/* Seller Info */}
             <div className="border-t border-border pt-4 mt-6">
               <p className="text-sm text-muted-foreground">
                 Seller: <span className="text-primary font-medium">{product.seller}</span>
@@ -322,6 +323,17 @@ const ProductDetail = () => {
             </div>
           </div>
         </div>
+
+        {/* Description */}
+        {product.description && (
+          <section className="bg-card rounded-sm p-6 mt-6">
+            <h2 className="text-xl font-bold mb-4">Product Description</h2>
+            <div 
+              className="prose prose-gray max-w-none prose-p:leading-relaxed prose-headings:font-bold prose-a:text-primary text-gray-700"
+              dangerouslySetInnerHTML={{ __html: product.description }}
+            />
+          </section>
+        )}
 
         {/* Specifications */}
         <section className="bg-card rounded-sm p-6 mt-6">

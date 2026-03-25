@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronLeft as ChevronL, ChevronRight as ChevronR } from 'lucide-react';
+import { getImageUrl } from '@/lib/utils';
 
 const BannerCarousel = ({ banners = [] }: { banners?: any[] }) => {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -40,7 +41,7 @@ const BannerCarousel = ({ banners = [] }: { banners?: any[] }) => {
               >
                 <div className="aspect-[2.3/1] md:aspect-[3.5/1] w-full relative overflow-hidden">
                   <img
-                    src={banner.image}
+                    src={getImageUrl(banner.image)}
                     alt={banner.title}
                     className="w-full h-full object-cover"
                   />

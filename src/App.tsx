@@ -20,6 +20,9 @@ import BecomeSeller from "./pages/BecomeSeller";
 import AdminDashboard from "./pages/AdminDashboard";
 import CmsPage from "./pages/CmsPage";
 
+import ProductForm from "./pages/admin/ProductForm";
+import OrderDetailPage from "./pages/admin/OrderDetailPage";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -42,10 +45,14 @@ const App = () => (
               <Route path="/account" element={<Account />} />
               <Route path="/seller" element={<BecomeSeller />} />
               <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/products/new" element={<ProductForm />} />
+              <Route path="/admin/products/edit/:productId" element={<ProductForm />} />
+              <Route path="/admin/orders/:orderId" element={<OrderDetailPage />} />
 
               <Route path="/about" element={<CmsPage pageType="aboutUs" title="About Us" />} />
               <Route path="/privacy" element={<CmsPage pageType="privacyPolicy" title="Privacy Policy" />} />
               <Route path="/terms" element={<CmsPage pageType="termsAndConditions" title="Terms & Conditions" />} />
+              <Route path="/returns" element={<CmsPage pageType="returnsPolicy" title="Returns Policy" />} />
 
               {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />

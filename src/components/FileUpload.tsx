@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Upload, X, Loader2, Image as ImageIcon } from 'lucide-react';
 import api from '@/api/client';
 import { toast } from 'sonner';
+import { getImageUrl } from '@/lib/utils';
 
 interface FileUploadProps {
   onUpload: (url: string) => void;
@@ -51,7 +52,7 @@ const FileUpload = ({ onUpload, value, label, placeholder, className = "" }: Fil
         <div className="flex gap-4 items-center p-4 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-200 hover:border-primary/40 transition-all">
           <div className="w-16 h-16 rounded-xl bg-white border flex items-center justify-center overflow-hidden flex-shrink-0">
             {value ? (
-              <img src={value} alt="Preview" className="w-full h-full object-cover" />
+              <img src={getImageUrl(value)} alt="Preview" className="w-full h-full object-cover" />
             ) : (
               <ImageIcon className="text-gray-300" size={24} />
             )}

@@ -5,7 +5,7 @@ import api from '@/api/client';
 import { Loader2 } from 'lucide-react';
 
 interface CmsPageProps {
-    pageType: 'aboutUs' | 'privacyPolicy' | 'termsAndConditions';
+    pageType: 'aboutUs' | 'privacyPolicy' | 'termsAndConditions' | 'returnsPolicy';
     title: string;
 }
 
@@ -43,9 +43,10 @@ const CmsPage: React.FC<CmsPageProps> = ({ pageType, title }) => {
                             <Loader2 className="animate-spin text-primary" size={40} />
                         </div>
                     ) : (
-                        <div className="prose prose-gray max-w-none prose-p:leading-relaxed prose-headings:font-bold prose-a:text-primary whitespace-pre-wrap text-gray-700">
-                            {content}
-                        </div>
+                        <div 
+                            className="prose prose-gray max-w-none prose-p:leading-relaxed prose-headings:font-bold prose-a:text-primary text-gray-700"
+                            dangerouslySetInnerHTML={{ __html: content }}
+                        />
                     )}
                 </div>
             </main>

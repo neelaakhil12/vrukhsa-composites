@@ -28,6 +28,9 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import FileUpload from '@/components/FileUpload';
+import { getImageUrl } from '@/lib/utils';
+import ReactQuill from 'react-quill';
+import 'react-quill/dist/quill.snow.css';
 
 const AdminDashboard = () => {
     const { user, isLoading: authLoading } = useAuth();
@@ -35,29 +38,10 @@ const AdminDashboard = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'appearance' | 'content' | 'orders'>('dashboard');
-    const [isModalOpen, setIsModalOpen] = useState(false);
-    const [siteSettings, setSiteSettings] = useState<any>({ banners: [], categories: [] });
     const [isSavingSettings, setIsSavingSettings] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-    const [editingProduct, setEditingProduct] = useState<any>(null);
-    const [formData, setFormData] = useState({
-        name: '',
-        category: '',
-        subCategory: '',
-        price: '',
-        originalPrice: '',
-        description: '',
-        images: [] as string[],
-        availableOffers: [] as string[],
-        specifications: {} as Record<string, string>,
-        stockQuantity: '0',
-        warranty: '',
-        isSponsored: false,
-        seller: 'Vruksha Composites'
-    });
     const [orders, setOrders] = useState<any[]>([]);
-    const [selectedOrder, setSelectedOrder] = useState<any>(null);
-    const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+    const [siteSettings, setSiteSettings] = useState<any>({ banners: [], categories: [] });
 
     useEffect(() => {
         if (user && user.role === 'admin') {
@@ -83,45 +67,6 @@ const AdminDashboard = () => {
         }
     };
 
-    const handleOpenModal = (product: any = null) => {
-        if (product) {
-            setEditingProduct(product);
-            setFormData({
-                name: product.name || product.product_name || '',
-                category: product.category || '',
-                subCategory: product.subCategory || '',
-                price: product.price?.toString() || '',
-                originalPrice: product.originalPrice?.toString() || '',
-                description: product.description || '',
-                images: product.images || [],
-                availableOffers: product.availableOffers || [],
-                specifications: product.specifications || {},
-                stockQuantity: product.stockQuantity?.toString() || '0',
-                warranty: product.warranty || '',
-                isSponsored: !!product.isSponsored,
-                seller: product.seller || 'Vruksha Composites'
-            });
-        } else {
-            setEditingProduct(null);
-            setFormData({
-                name: '',
-                category: '',
-                subCategory: '',
-                price: '',
-                originalPrice: '',
-                description: '',
-                images: [],
-                availableOffers: [],
-                specifications: {},
-                stockQuantity: '0',
-                warranty: '',
-                isSponsored: false,
-                seller: 'Vruksha Composites'
-            });
-        }
-        setIsModalOpen(true);
-    };
-
     const handleDelete = async (id: string) => {
         if (!confirm('Are you sure you want to archive this product?')) return;
         try {
@@ -143,38 +88,11 @@ const AdminDashboard = () => {
         }
     };
 
-    const handleFormSubmit = async (e: React.FormEvent) => {
-        e.preventDefault();
-        try {
-            const data = {
-                ...formData,
-                price: parseFloat(formData.price),
-                originalPrice: formData.originalPrice ? parseFloat(formData.originalPrice) : undefined,
-                stockQuantity: parseInt(formData.stockQuantity) || 0,
-            };
-
-            if (editingProduct) {
-                await api.patch(`/products/${editingProduct.id || editingProduct.product_id}`, data);
-                toast.success('Product updated successfully');
-            } else {
-                await api.post('/products', data);
-                toast.success('Product created successfully');
-            }
-            setIsModalOpen(false);
-            fetchData();
-        } catch (error) {
-            toast.error('Failed to save product');
-        }
-    };
-
     const handleUpdateOrderStatus = async (orderId: string, status: string) => {
         try {
             await api.put(`/orders/${orderId}/status`, { orderStatus: status });
             toast.success('Order status updated');
             fetchData();
-            if (selectedOrder && selectedOrder._id === orderId) {
-                setSelectedOrder({ ...selectedOrder, orderStatus: status });
-            }
         } catch (error) {
             toast.error('Failed to update status');
         }
@@ -185,9 +103,6 @@ const AdminDashboard = () => {
             await api.put(`/orders/${orderId}/payment`, { paymentStatus: status });
             toast.success('Payment status updated');
             fetchData();
-            if (selectedOrder && selectedOrder._id === orderId) {
-                setSelectedOrder({ ...selectedOrder, paymentStatus: status });
-            }
         } catch (error) {
             toast.error('Failed to update payment status');
         }
@@ -335,8 +250,8 @@ const AdminDashboard = () => {
                             <div className="bg-white p-8 rounded-2xl border border-gray-100 shadow-sm">
                                 <h3 className="text-lg font-bold mb-4">Quick Actions</h3>
                                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                                    <button
-                                        onClick={() => { setActiveTab('products'); handleOpenModal(); }}
+                                    <Link
+                                        to="/admin/products/new"
                                         className="flex items-center gap-3 p-4 border rounded-xl hover:bg-primary/5 hover:border-primary transition-all text-left"
                                     >
                                         <div className="bg-primary/10 p-2 rounded-lg text-primary"><Plus size={20} /></div>
@@ -344,7 +259,7 @@ const AdminDashboard = () => {
                                             <p className="font-bold text-sm">Add New Product</p>
                                             <p className="text-xs text-gray-500">Expand your inventory</p>
                                         </div>
-                                    </button>
+                                    </Link>
                                 </div>
                             </div>
                         </div>
@@ -355,13 +270,13 @@ const AdminDashboard = () => {
                                     <h1 className="text-2xl lg:text-3xl font-extrabold text-gray-900">Products</h1>
                                     <p className="text-gray-500 text-sm mt-1">Manage and update your product listings effectively.</p>
                                 </div>
-                                <button
-                                    onClick={() => handleOpenModal()}
+                                <Link
+                                    to="/admin/products/new"
                                     className="flex items-center justify-center gap-2 bg-primary text-white px-6 py-3 rounded-xl font-bold hover:shadow-lg transition-all active:scale-95 w-full sm:w-auto"
                                 >
                                     <Plus size={20} />
                                     <span>Add Product</span>
-                                </button>
+                                </Link>
                             </div>
 
                             {/* Search & Filters */}
@@ -449,12 +364,12 @@ const AdminDashboard = () => {
                                                         </td>
                                                         <td className="px-6 py-5 text-right">
                                                             <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                                <button
-                                                                    onClick={() => handleOpenModal(p)}
+                                                                <Link
+                                                                    to={`/admin/products/edit/${p.id || p.product_id}`}
                                                                     className="p-2.5 text-blue-600 hover:bg-blue-50 rounded-xl transition-all" title="Edit Product"
                                                                 >
                                                                     <Pencil size={18} />
-                                                                </button>
+                                                                </Link>
                                                                 {p.isDeleted ? (
                                                                     <button
                                                                         onClick={() => handleRestore(p.id || p.product_id)}
@@ -619,32 +534,18 @@ const AdminDashboard = () => {
                                                 }}
                                                 className="w-full"
                                             />
-                                            <div className="flex gap-2 items-center">
-                                                <div className="w-12 h-12 bg-white rounded-xl flex items-center justify-center text-xl shadow-sm group-hover:scale-110 transition-transform flex-shrink-0">
-                                                    <input
-                                                        value={cat.icon || '📦'}
-                                                        onChange={(e) => {
-                                                            const newCats = [...siteSettings.categories];
-                                                            newCats[index].icon = e.target.value;
-                                                            setSiteSettings({ ...siteSettings, categories: newCats });
-                                                        }}
-                                                        className="w-full h-full text-center bg-transparent border-none outline-none cursor-pointer"
-                                                        maxLength={2}
-                                                        title="Emoji Icon"
-                                                    />
-                                                </div>
-                                                <div className="flex-1">
-                                                    <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 px-1">Display Name</label>
-                                                    <input
-                                                        value={cat.name}
-                                                        onChange={(e) => {
-                                                            const newCats = [...siteSettings.categories];
-                                                            newCats[index].name = e.target.value;
-                                                            setSiteSettings({ ...siteSettings, categories: newCats });
-                                                        }}
-                                                        className="w-full bg-gray-50 border border-transparent rounded-lg px-2 py-1 outline-none focus:border-primary/20 text-xs font-black text-gray-700 uppercase tracking-tighter"
-                                                    />
-                                                </div>
+                                            <div className="flex-1">
+                                                <label className="block text-[10px] font-bold text-gray-400 uppercase tracking-widest mb-1 px-1">Display Name</label>
+                                                <input
+                                                    value={cat.name}
+                                                    onChange={(e) => {
+                                                        const newCats = [...siteSettings.categories];
+                                                        newCats[index].name = e.target.value;
+                                                        setSiteSettings({ ...siteSettings, categories: newCats });
+                                                    }}
+                                                    className="w-full bg-gray-50 border border-transparent rounded-lg px-3 py-2 outline-none focus:border-primary/20 text-xs font-black text-gray-700 uppercase tracking-tighter"
+                                                    placeholder="Category Name"
+                                                />
                                             </div>
                                         </div>
                                     ))}
@@ -721,35 +622,49 @@ const AdminDashboard = () => {
                                     <p className="text-gray-500 text-sm mt-1">Manage the content of informational pages</p>
                                 </div>
                                 <div className="space-y-6">
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">About Us</label>
-                                        <textarea
-                                            rows={6}
-                                            value={siteSettings.aboutUs || ''}
-                                            onChange={(e) => setSiteSettings({ ...siteSettings, aboutUs: e.target.value })}
-                                            placeholder="Write about your company here (Markdown supported)..."
-                                            className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/20 transition-all outline-none font-medium placeholder:text-gray-300 resize-y"
-                                        />
+                                    <div className="space-y-2">
+                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest px-1">About Us</label>
+                                        <div className="bg-gray-50 rounded-2xl overflow-hidden border border-transparent focus-within:border-primary/20 transition-all">
+                                            <ReactQuill
+                                                theme="snow"
+                                                value={siteSettings.aboutUs || ''}
+                                                onChange={(content) => setSiteSettings({ ...siteSettings, aboutUs: content })}
+                                                className="bg-white"
+                                            />
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Privacy Policy</label>
-                                        <textarea
-                                            rows={6}
-                                            value={siteSettings.privacyPolicy || ''}
-                                            onChange={(e) => setSiteSettings({ ...siteSettings, privacyPolicy: e.target.value })}
-                                            placeholder="Privacy policy details..."
-                                            className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/20 transition-all outline-none font-medium placeholder:text-gray-300 resize-y"
-                                        />
+                                    <div className="space-y-2">
+                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest px-1">Privacy Policy</label>
+                                        <div className="bg-gray-50 rounded-2xl overflow-hidden border border-transparent focus-within:border-primary/20 transition-all">
+                                            <ReactQuill
+                                                theme="snow"
+                                                value={siteSettings.privacyPolicy || ''}
+                                                onChange={(content) => setSiteSettings({ ...siteSettings, privacyPolicy: content })}
+                                                className="bg-white"
+                                            />
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Terms & Conditions</label>
-                                        <textarea
-                                            rows={6}
-                                            value={siteSettings.termsAndConditions || ''}
-                                            onChange={(e) => setSiteSettings({ ...siteSettings, termsAndConditions: e.target.value })}
-                                            placeholder="Terms and conditions..."
-                                            className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/20 transition-all outline-none font-medium placeholder:text-gray-300 resize-y"
-                                        />
+                                    <div className="space-y-2">
+                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest px-1">Terms & Conditions</label>
+                                        <div className="bg-gray-50 rounded-2xl overflow-hidden border border-transparent focus-within:border-primary/20 transition-all">
+                                            <ReactQuill
+                                                theme="snow"
+                                                value={siteSettings.termsAndConditions || ''}
+                                                onChange={(content) => setSiteSettings({ ...siteSettings, termsAndConditions: content })}
+                                                className="bg-white"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest px-1">Returns Policy</label>
+                                        <div className="bg-gray-50 rounded-2xl overflow-hidden border border-transparent focus-within:border-primary/20 transition-all">
+                                            <ReactQuill
+                                                theme="snow"
+                                                value={siteSettings.returnsPolicy || ''}
+                                                onChange={(content) => setSiteSettings({ ...siteSettings, returnsPolicy: content })}
+                                                className="bg-white"
+                                            />
+                                        </div>
                                     </div>
                                 </div>
                             </section>
@@ -826,12 +741,12 @@ const AdminDashboard = () => {
                                                             </span>
                                                         </td>
                                                         <td className="px-6 py-4 text-right">
-                                                            <button
-                                                                onClick={() => { setSelectedOrder(order); setIsOrderModalOpen(true); }}
+                                                            <Link
+                                                                to={`/admin/orders/${order._id}`}
                                                                 className="p-2 text-primary hover:bg-primary/5 rounded-lg transition-all"
                                                             >
                                                                 <Eye size={18} />
-                                                            </button>
+                                                            </Link>
                                                         </td>
                                                     </tr>
                                                 ))
@@ -844,358 +759,6 @@ const AdminDashboard = () => {
                     )}
                 </div>
             </main>
-
-            {isModalOpen && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-0 md:p-4 animate-in fade-in duration-300">
-                    <div className="bg-white md:rounded-[2rem] shadow-2xl w-full max-w-2xl h-full md:max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
-                        <div className="p-6 md:p-8 border-b border-gray-100 flex items-center justify-between bg-white relative">
-                            <div>
-                                <h2 className="text-xl md:text-2xl font-black text-gray-900">{editingProduct ? 'Update Product' : 'New Listing'}</h2>
-                                <p className="text-gray-400 text-xs md:text-sm mt-1">{editingProduct ? 'Modify active product specifications' : 'Add a new item to your store'}</p>
-                            </div>
-                            <button onClick={() => setIsModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-all text-gray-400">
-                                <XCircle size={28} />
-                            </button>
-                        </div>
-                        <div className="flex-1 overflow-y-auto p-6 md:p-8">
-                            <form id="product-form" onSubmit={handleFormSubmit} className="space-y-6">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-                                    <div className="md:col-span-2">
-                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Display Name</label>
-                                        <input
-                                            type="text" required
-                                            value={formData.name}
-                                            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                                            placeholder="e.g. Lithium Nano Powder"
-                                            className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/20 transition-all outline-none font-medium placeholder:text-gray-300"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Primary Category</label>
-                                        <select
-                                            required
-                                            value={formData.category}
-                                            onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                                            className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/20 transition-all outline-none font-medium text-gray-700 appearance-none cursor-pointer"
-                                        >
-                                            <option value="" disabled>Select Primary Category</option>
-                                            {(siteSettings?.categories || []).map((cat: any) => (
-                                                <option key={cat.id} value={cat.id}>{cat.name}</option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Subcategory</label>
-                                        <input
-                                            type="text"
-                                            value={formData.subCategory}
-                                            onChange={(e) => setFormData({ ...formData, subCategory: e.target.value })}
-                                            placeholder="Pure Nano Powder"
-                                            className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/20 transition-all outline-none font-medium placeholder:text-gray-300"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Sale Price (₹)</label>
-                                        <input
-                                            type="number" required
-                                            value={formData.price}
-                                            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                                            className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/20 transition-all outline-none font-black"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Original Price (₹)</label>
-                                        <input
-                                            type="number"
-                                            value={formData.originalPrice}
-                                            onChange={(e) => setFormData({ ...formData, originalPrice: e.target.value })}
-                                            className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/20 transition-all outline-none font-medium text-gray-400"
-                                        />
-                                    </div>
-                                    <div className="md:col-span-2">
-                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Extended Description</label>
-                                        <textarea
-                                            rows={4}
-                                            value={formData.description}
-                                            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-                                            placeholder="Provide technical specifications and use cases..."
-                                            className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/20 transition-all outline-none font-medium placeholder:text-gray-300 resize-none"
-                                        />
-                                    </div>
-
-                                    {/* Stock & Warranty */}
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Stock Quantity</label>
-                                        <input
-                                            type="number"
-                                            value={formData.stockQuantity}
-                                            onChange={(e) => setFormData({ ...formData, stockQuantity: e.target.value })}
-                                            className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/20 transition-all outline-none font-medium"
-                                        />
-                                    </div>
-                                    <div>
-                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Warranty Details</label>
-                                        <input
-                                            type="text"
-                                            value={formData.warranty}
-                                            onChange={(e) => setFormData({ ...formData, warranty: e.target.value })}
-                                            placeholder="e.g. 1 Year Manufacturer Warranty"
-                                            className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/20 transition-all outline-none font-medium text-gray-600"
-                                        />
-                                    </div>
-
-                                    {/* Availability & Sponsored */}
-                                    <div className="md:col-span-2 flex items-center gap-6 p-4 bg-gray-50 rounded-2xl">
-                                        <label className="flex items-center gap-3 cursor-pointer group">
-                                            <input
-                                                type="checkbox"
-                                                checked={formData.isSponsored}
-                                                onChange={(e) => setFormData({ ...formData, isSponsored: e.target.checked })}
-                                                className="w-5 h-5 rounded border-gray-300 text-primary focus:ring-primary"
-                                            />
-                                            <span className="text-sm font-bold text-gray-700 group-hover:text-primary transition-colors">Featured/Sponsored Product</span>
-                                        </label>
-                                    </div>
-
-                                    {/* Available Offers */}
-                                    <div className="md:col-span-2">
-                                        <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest mb-2 px-1">Available Offers (one per line)</label>
-                                        <textarea
-                                            rows={3}
-                                            value={formData.availableOffers.join('\n')}
-                                            onChange={(e) => {
-                                                const offers = e.target.value.split('\n').filter(line => line.trim());
-                                                setFormData({ ...formData, availableOffers: offers });
-                                            }}
-                                            placeholder="e.g. Bank Offer: 10% off on HDFC Cards&#10;No Cost EMI starting from ₹2,000/month"
-                                            className="w-full px-5 py-4 bg-gray-50 border-none rounded-2xl focus:ring-4 focus:ring-primary/20 transition-all outline-none font-medium placeholder:text-gray-300 resize-none"
-                                        />
-                                    </div>
-
-                                    {/* Specifications Editor */}
-                                    <div className="md:col-span-2 space-y-4">
-                                        <div className="flex items-center justify-between px-1">
-                                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest">Technical Specifications</label>
-                                            <button
-                                                type="button"
-                                                onClick={() => {
-                                                    const key = prompt('Enter specification name (e.g. Material)');
-                                                    if (key) setFormData({ ...formData, specifications: { ...formData.specifications, [key]: '' } });
-                                                }}
-                                                className="text-primary hover:text-primary/80 flex items-center gap-1 text-xs font-bold uppercase"
-                                            >
-                                                <PlusCircle size={14} />
-                                                Add Specification
-                                            </button>
-                                        </div>
-                                        <div className="space-y-3">
-                                            {Object.entries(formData.specifications).length === 0 ? (
-                                                <p className="text-sm text-gray-400 italic px-1">No specifications added yet.</p>
-                                            ) : (
-                                                Object.entries(formData.specifications).map(([key, value]) => (
-                                                    <div key={key} className="flex gap-4 items-center">
-                                                        <div className="bg-gray-100 px-4 py-3 rounded-xl min-w-[140px] text-xs font-bold text-gray-500 uppercase flex-shrink-0">
-                                                            {key}
-                                                        </div>
-                                                        <input
-                                                            type="text"
-                                                            value={value}
-                                                            onChange={(e) => setFormData({
-                                                                ...formData,
-                                                                specifications: { ...formData.specifications, [key]: e.target.value }
-                                                            })}
-                                                            placeholder={`Value for ${key}`}
-                                                            className="flex-1 px-5 py-3 border border-gray-100 rounded-xl focus:ring-2 focus:ring-primary transition-all outline-none text-sm font-medium"
-                                                        />
-                                                        <button
-                                                            type="button"
-                                                            onClick={() => {
-                                                                const { [key]: removed, ...rest } = formData.specifications;
-                                                                setFormData({ ...formData, specifications: rest });
-                                                            }}
-                                                            className="p-2 text-gray-300 hover:text-red-500 transition-colors"
-                                                        >
-                                                            <MinusCircle size={20} />
-                                                        </button>
-                                                    </div>
-                                                ))
-                                            )}
-                                        </div>
-                                    </div>
-                                    <div className="md:col-span-2">
-                                        <FileUpload
-                                            label="Cover Image"
-                                            value={formData.images[0] || ''}
-                                            onUpload={(url) => {
-                                                const newImages = [...formData.images];
-                                                newImages[0] = url;
-                                                setFormData({ ...formData, images: newImages });
-                                            }}
-                                            placeholder="Upload product cover image..."
-                                        />
-                                    </div>
-                                    <div className="md:col-span-2 space-y-4">
-                                        <div className="flex items-center justify-between px-1">
-                                            <label className="block text-xs font-bold text-gray-400 uppercase tracking-widest">Additional Images</label>
-                                            <button
-                                                type="button"
-                                                onClick={() => setFormData({ ...formData, images: [...formData.images, ''] })}
-                                                className="text-primary hover:text-primary/80 flex items-center gap-1 text-xs font-bold uppercase"
-                                            >
-                                                <PlusCircle size={14} />
-                                                Add More
-                                            </button>
-                                        </div>
-                                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                            {formData.images.slice(1).map((img, idx) => (
-                                                <FileUpload
-                                                    key={idx}
-                                                    value={img}
-                                                    onUpload={(url) => {
-                                                        const newImages = [...formData.images];
-                                                        newImages[idx + 1] = url;
-                                                        setFormData({ ...formData, images: newImages });
-                                                    }}
-                                                    placeholder={`Extra image ${idx + 1}`}
-                                                />
-                                            ))}
-                                        </div>
-                                    </div>
-                                </div>
-                            </form>
-                        </div>
-                        <div className="p-8 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
-                            <button
-                                type="button"
-                                onClick={() => setIsModalOpen(false)}
-                                className="px-8 py-4 rounded-2xl font-bold text-gray-500 hover:bg-gray-100 transition-all"
-                            >
-                                Discard
-                            </button>
-                            <button
-                                type="submit"
-                                form="product-form"
-                                className="bg-primary text-white px-10 py-4 rounded-2xl font-black shadow-xl shadow-primary/20 hover:shadow-primary/40 hover:-translate-y-0.5 active:translate-y-0 transition-all flex items-center gap-2"
-                            >
-                                <CheckCircle size={20} />
-                                <span>{editingProduct ? 'Save Changes' : 'Create Product'}</span>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {isOrderModalOpen && selectedOrder && (
-                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[100] p-0 md:p-4 animate-in fade-in duration-300">
-                    <div className="bg-white md:rounded-[2rem] shadow-2xl w-full max-w-4xl h-full md:max-h-[90vh] overflow-hidden flex flex-col animate-in zoom-in-95 duration-300">
-                        <div className="p-6 md:p-8 border-b border-gray-100 flex items-center justify-between bg-white relative">
-                            <div>
-                                <h2 className="text-xl md:text-2xl font-black text-gray-900 flex items-center gap-3">
-                                    <ShoppingBag className="text-primary" />
-                                    Order Detail #{selectedOrder._id.slice(-8).toUpperCase()}
-                                </h2>
-                                <p className="text-gray-400 text-xs md:text-sm mt-1">Placed on {new Date(selectedOrder.createdAt).toLocaleString()}</p>
-                            </div>
-                            <button onClick={() => setIsOrderModalOpen(false)} className="p-2 hover:bg-gray-100 rounded-full transition-all text-gray-400">
-                                <X size={28} />
-                            </button>
-                        </div>
-                        <div className="flex-1 overflow-y-auto p-6 md:p-8 space-y-8">
-                            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                                {/* Left Side: Items & Status */}
-                                <div className="space-y-6">
-                                    <section>
-                                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Order Items</h3>
-                                        <div className="space-y-4">
-                                            {selectedOrder.items.map((item: any, idx: number) => (
-                                                <div key={idx} className="flex gap-4 items-center p-3 bg-gray-50 rounded-2xl">
-                                                    <img src={item.image} alt={item.name} className="w-16 h-16 object-cover rounded-xl" />
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="font-bold text-gray-900 truncate">{item.name}</p>
-                                                        <p className="text-sm text-gray-500">₹{item.price.toLocaleString()} x {item.quantity}</p>
-                                                    </div>
-                                                    <p className="font-black text-gray-900 whitespace-nowrap">₹{(item.price * item.quantity).toLocaleString()}</p>
-                                                </div>
-                                            ))}
-                                        </div>
-                                        <div className="mt-4 pt-4 border-t border-dashed flex justify-between items-center px-2">
-                                            <span className="font-bold text-gray-500">Total Amount</span>
-                                            <span className="text-2xl font-black text-primary">₹{selectedOrder.totalAmount.toLocaleString()}</span>
-                                        </div>
-                                    </section>
-
-                                    <section className="p-6 bg-primary/5 rounded-[2rem] border border-primary/10">
-                                        <h3 className="text-xs font-bold text-primary uppercase tracking-widest mb-4 flex items-center gap-2">
-                                            <RefreshCw size={14} />
-                                            Update Order Status
-                                        </h3>
-                                        <div className="flex flex-wrap gap-2">
-                                            {['placed', 'confirmed', 'shipped', 'delivered', 'cancelled'].map((status) => (
-                                                <button
-                                                    key={status}
-                                                    onClick={() => handleUpdateOrderStatus(selectedOrder._id, status)}
-                                                    className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-wider transition-all ${selectedOrder.orderStatus === status ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-white text-gray-500 border hover:border-primary/30'}`}
-                                                >
-                                                    {status}
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </section>
-                                </div>
-
-                                {/* Right Side: Shipping & Payment */}
-                                <div className="space-y-6">
-                                    <section className="p-6 bg-gray-50 rounded-[2rem]">
-                                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                            <Truck size={16} />
-                                            Shipping Details
-                                        </h3>
-                                        <div className="space-y-2">
-                                            <p className="font-black text-gray-900 text-lg uppercase tracking-tight">{selectedOrder.shippingAddress.fullName}</p>
-                                            <p className="text-gray-600 font-medium">{selectedOrder.shippingAddress.address}</p>
-                                            <p className="text-gray-600 font-medium">{selectedOrder.shippingAddress.city}, {selectedOrder.shippingAddress.state} - {selectedOrder.shippingAddress.pincode}</p>
-                                            <p className="text-primary font-bold mt-2">📞 {selectedOrder.shippingAddress.phone}</p>
-                                        </div>
-                                    </section>
-
-                                    <section className="p-6 bg-gray-50 rounded-[2rem]">
-                                        <h3 className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4 flex items-center gap-2">
-                                            <CreditCard size={16} />
-                                            Payment Information
-                                        </h3>
-                                        <div className="space-y-4">
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-sm text-gray-500">Method:</span>
-                                                <span className="font-black text-gray-900 uppercase tracking-widest">{selectedOrder.paymentMethod}</span>
-                                            </div>
-                                            <div className="flex justify-between items-center">
-                                                <span className="text-sm text-gray-500">Status:</span>
-                                                <div className="flex gap-2">
-                                                    {['pending', 'paid', 'failed'].map((pStatus) => (
-                                                        <button
-                                                            key={pStatus}
-                                                            onClick={() => handleUpdatePaymentStatus(selectedOrder._id, pStatus)}
-                                                            className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest transition-all ${selectedOrder.paymentStatus === pStatus ? (pStatus === 'paid' ? 'bg-green-500 text-white shadow-lg' : pStatus === 'failed' ? 'bg-red-500 text-white shadow-lg' : 'bg-yellow-500 text-white shadow-lg') : 'bg-white text-gray-400 border'}`}
-                                                        >
-                                                            {pStatus}
-                                                        </button>
-                                                    ))}
-                                                </div>
-                                            </div>
-                                            {selectedOrder.razorpayPaymentId && (
-                                                <div className="pt-4 border-t border-dashed space-y-2">
-                                                    <p className="text-[10px] font-bold text-gray-400 uppercase">Razorpay Payment ID</p>
-                                                    <p className="font-mono text-xs text-primary bg-primary/5 p-2 rounded-lg">{selectedOrder.razorpayPaymentId}</p>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </section>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
         </div>
     );
 };
