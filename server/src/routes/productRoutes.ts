@@ -1,14 +1,12 @@
 import express from 'express';
 import { ProductController } from '../controllers/productController';
 import { ProductService } from '../services/ProductService';
-import { MongoProductRepository } from '../repositories/MongoProductRepository';
-import { JsonProductRepository } from '../repositories/JsonProductRepository';
+import { PrismaProductRepository } from '../repositories/PrismaProductRepository';
 
 const router = express.Router();
 
-// Dependency Injection
-const isCloudMode = process.env.DATA_MODE === 'cloud';
-const repository = isCloudMode ? new MongoProductRepository() : new JsonProductRepository();
+// Always use Prisma (MySQL) repository
+const repository = new PrismaProductRepository();
 const productService = new ProductService(repository);
 const productController = new ProductController(productService);
 

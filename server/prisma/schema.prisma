@@ -14,6 +14,7 @@ model User {
   name      String
   email     String   @unique
   password  String
+  phone     String?
   role      String   @default("user")
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -39,36 +40,44 @@ model Product {
   warranty           String?
   seller             String?  @default("Vruksha Composites")
   isSponsored        Boolean  @default(false)
+  deliveryTime       String?  @default("4-5 business days")
   isDeleted          Boolean  @default(false)
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 }
 
 model Category {
-  id   String @id
-  name String
-  icon String?
+  id    String  @id
+  name  String
+  icon  String?
+  image String?
 }
 
 model Order {
-  id                String   @id @default(cuid())
-  userId            Int
-  user              User     @relation(fields: [userId], references: [id])
-  items             Json // JSON array of ordered items
-  totalAmount       Float
-  shippingAddress   Json // JSON object for address
-  paymentMethod     String
-  paymentStatus     String   @default("pending")
-  orderStatus       String   @default("placed")
-  razorpayOrderId   String?
-  razorpayPaymentId String?
-  razorpaySignature String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id                  String   @id @default(cuid())
+  userId              Int
+  user                User     @relation(fields: [userId], references: [id])
+  items               Json     // JSON array of ordered items
+  totalAmount         Float
+  shippingAddress     Json     // JSON object for address (includes email, phone, fullName, etc.)
+  paymentMethod       String
+  paymentStatus       String   @default("pending")
+  orderStatus         String   @default("placed")
+  deliveryStages      Json?    // JSON array of delivery stage objects
+  trackingNumber      String?
+  trackingLink        String?
+  trackingPlatform    String?
+  expectedDeliveryDate DateTime?
+  internalNote        String?  @db.Text
+  razorpayOrderId     String?
+  razorpayPaymentId   String?
+  razorpaySignature   String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
 }
 
 model Setting {
-  id    Int  @id @default(autoincrement())
+  id    Int    @id @default(autoincrement())
   key   String @unique
   value Json
 }
