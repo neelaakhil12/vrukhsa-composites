@@ -2,9 +2,10 @@ import axios from 'axios';
 import { products } from '@/data/products';
 
 export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+const baseURL = API_BASE_URL.startsWith('http') ? API_BASE_URL : (API_BASE_URL.startsWith('/') ? API_BASE_URL : `/${API_BASE_URL}`);
 
 const api = axios.create({
-    baseURL: API_BASE_URL,
+    baseURL: baseURL,
     withCredentials: true, // Send cookies with requests
     headers: {
         'Content-Type': 'application/json',
