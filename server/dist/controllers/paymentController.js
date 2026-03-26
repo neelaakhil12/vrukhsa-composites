@@ -4,13 +4,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getRazorpayConfig = exports.verifyPayment = exports.createRazorpayOrder = void 0;
-const razorpay_1 = __importDefault(require("razorpay"));
 const crypto_1 = __importDefault(require("crypto"));
 const mysql_1 = __importDefault(require("../lib/mysql"));
-const razorpay = new razorpay_1.default({
-    key_id: process.env.RAZORPAY_KEY_ID || '',
-    key_secret: process.env.RAZORPAY_KEY_SECRET || '',
-});
+// Lazy initialization — only create Razorpay instance when needed
+// This prevents the app from crashing at startup if env vars are missing
+let razorpayInstance = null;
+const getRazorpay = () => {
+    if (!razorpayInstance) {
+        const Razorpay = require('razorpay');
+        razorpayInstance = new Razorpay({
+            key_id: process.env.RAZORPAY_KEY_ID || 'NOT_SET',
+            key_secret: process.env.RAZORPAY_KEY_SECRET || 'NOT_SET',
+        });
+    }
+    return razorpayInstance;
+};
 // @desc    Create Razorpay Order
 const createRazorpayOrder = async (req, res) => {
     try {
@@ -20,7 +28,7 @@ const createRazorpayOrder = async (req, res) => {
             currency: 'INR',
             receipt: receipt || `receipt_${Date.now()}`,
         };
-        const order = await razorpay.orders.create(options);
+        const order = await getRazorpay().orders.create(options);
         if (!order)
             return res.status(500).send('Error creating Razorpay order');
         res.json(order);
