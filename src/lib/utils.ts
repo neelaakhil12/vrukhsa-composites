@@ -14,14 +14,14 @@ export function getImageUrl(path: string | undefined | null) {
   if (!path) return '';
   if (path.startsWith('http')) return path;
   
-  // Get API_BASE_URL from import.meta.env to avoid circular dependency with client.ts if possible,
-  // or just hardcode the logic if it's consistent.
-  // Actually, client.ts exports API_BASE_URL.
+  const envUrl = import.meta.env.VITE_API_URL;
+  if (envUrl) {
+    const cleanBase = envUrl.endsWith('/') ? envUrl.slice(0, -1) : envUrl;
+    const cleanPath = path.startsWith('/') ? path : `/${path}`;
+    return `${cleanBase}${cleanPath}`;
+  }
   
-  const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
-  // Remove trailing slash from baseUrl and leading slash from path if necessary
-  const cleanBase = baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : baseUrl;
-  const cleanPath = path.startsWith('/') ? path : `/${path}`;
-  
-  return `${cleanBase}${cleanPath}`;
+  // If no VITE_API_URL, return the path as is (relative to current origin).
+  // This works on production (Hostinger) where frontend and backend are on the same domain.
+  return path.startsWith('/') ? path : `/${path}`;
 }

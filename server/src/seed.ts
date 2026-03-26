@@ -1,6 +1,7 @@
 import { PrismaClient } from '@prisma/client';
 import fs from 'fs';
 import path from 'path';
+import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
@@ -26,6 +27,24 @@ const categories = [
 
 async function main() {
     console.log('🌱 Starting Seeding...');
+
+    // 0. Seed Admin User
+    console.log('👤 Seeding Admin User...');
+    const adminPassword = await bcrypt.hash('admin123', 10);
+    await prisma.user.upsert({
+        where: { email: 'admin@vrukshacomposites.com' },
+        update: {
+            password: adminPassword,
+            role: 'admin'
+        },
+        create: {
+            name: 'Vruksha Admin',
+            email: 'admin@vrukshacomposites.com',
+            password: adminPassword,
+            role: 'admin'
+        }
+    });
+    console.log('✅ Seeded admin user: admin@vrukshacomposites.com / admin123');
 
     // 1. Seed Categories
     console.log('📂 Seeding Categories...');
