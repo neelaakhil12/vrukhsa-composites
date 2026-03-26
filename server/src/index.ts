@@ -68,7 +68,7 @@ app.use('/api/payment', paymentRouter);
 app.use('/api/upload', uploadRouter);
 
 // Serve static files (uploads)
-app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
+app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
 
 // Serve frontend static files
 app.use(express.static(path.join(__dirname, '../../dist')));

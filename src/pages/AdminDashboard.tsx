@@ -457,7 +457,7 @@ const AdminDashboard = () => {
                                                 <div className="lg:col-span-1">
                                                     <div className="aspect-[16/9] rounded-2xl overflow-hidden bg-gray-200 border relative group/img">
                                                         {banner.image ? (
-                                                            <img src={banner.image} alt="Banner" className="w-full h-full object-cover" />
+                                                            <img src={getImageUrl(banner.image)} alt="Banner" className="w-full h-full object-cover" />
                                                         ) : (
                                                             <div className="w-full h-full flex items-center justify-center text-gray-400">
                                                                 <ImageIcon size={32} />
