@@ -24,7 +24,8 @@ import {
     ShoppingBag,
     Eye,
     Truck,
-    CreditCard
+    CreditCard,
+    LogOut
 } from 'lucide-react';
 import { toast } from 'sonner';
 import FileUpload from '@/components/FileUpload';
@@ -33,7 +34,7 @@ import ReactQuill from 'react-quill';
 import 'react-quill/dist/quill.snow.css';
 
 const AdminDashboard = () => {
-    const { user, isLoading: authLoading } = useAuth();
+    const { user, isLoading: authLoading, logout } = useAuth();
     const [products, setProducts] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
@@ -198,7 +199,7 @@ const AdminDashboard = () => {
                         <span className="font-medium">Orders</span>
                     </button>
                 </nav>
-                <div className="p-4 border-t border-gray-100">
+                <div className="p-4 border-t border-gray-100 space-y-3">
                     <div className="bg-gray-50 rounded-xl p-3 flex items-center gap-3">
                         <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center text-white font-bold text-xs">
                             {user.name.charAt(0)}
@@ -208,6 +209,19 @@ const AdminDashboard = () => {
                             <p className="text-xs text-gray-500 truncate">{user.email}</p>
                         </div>
                     </div>
+                    <button 
+                        onClick={async () => {
+                            try {
+                                await logout();
+                            } catch (error) {
+                                console.error('Failed to logout', error);
+                            }
+                        }}
+                        className="w-full flex items-center justify-center gap-2 p-2 text-red-600 font-bold bg-red-50 hover:bg-red-100 rounded-xl transition-colors"
+                    >
+                        <LogOut size={16} />
+                        Logout
+                    </button>
                 </div>
             </aside>
 
