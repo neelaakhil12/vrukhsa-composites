@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { products } from '@/data/products';
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || (typeof window !== 'undefined' ? `${window.location.protocol}//${window.location.host}/api` : '/api');
 const baseURL = API_BASE_URL.startsWith('http') ? API_BASE_URL : (API_BASE_URL.startsWith('/') ? API_BASE_URL : `/${API_BASE_URL}`);
 
 const api = axios.create({

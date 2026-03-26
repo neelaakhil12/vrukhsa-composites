@@ -70,9 +70,21 @@ app.use('/api/upload', uploadRouter);
 // Serve static files (uploads)
 app.use('/uploads', express.static(path.join(__dirname, '../public/uploads')));
 
+// Serve frontend static files
+app.use(express.static(path.join(__dirname, '../../dist')));
+
 // Health Check
-app.get('/', (req: Request, res: Response) => {
+app.get('/api/health', (req: Request, res: Response) => {
     res.send('Vruksha Composites API is running');
+});
+
+// Catch-all route for SPA
+app.get('*', (req: Request, res: Response) => {
+    // Check if it's an API request - don't serve index.html for missing API endpoints
+    if (req.path.startsWith('/api')) {
+        return res.status(404).json({ message: 'API endpoint not found' });
+    }
+    res.sendFile(path.join(__dirname, '../../dist/index.html'));
 });
 
 // Test DB Connection
