@@ -77,6 +77,10 @@ app.get('*', (req, res) => {
     if (req.path.startsWith('/api')) {
         return res.status(404).json({ message: 'API endpoint not found' });
     }
+    // Explicitly prevent caching for the root index.html to ensure users always get the latest build
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
     res.sendFile(path_1.default.join(__dirname, '../../dist/index.html'));
 });
 // Test DB Connection
