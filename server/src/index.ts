@@ -10,7 +10,7 @@ import { orderRouter } from './routes/orderRoutes';
 import settingsRouter from './routes/settingsRoutes';
 import { paymentRouter } from './routes/paymentRoutes';
 import { uploadRouter } from './routes/uploadRoutes';
-import prisma from './lib/prisma';
+import pool from './lib/mysql';
 
 dotenv.config();
 
@@ -100,9 +100,12 @@ app.get('*', (req: Request, res: Response) => {
 });
 
 // Test DB Connection
-prisma.$connect()
-    .then(() => console.log('✅ Connected to MySQL Database (Prisma)'))
-    .catch((err: any) => console.error('❌ MySQL/Prisma connection failed:', err));
+pool.getConnection()
+    .then(connection => {
+        console.log('✅ Connected to MySQL Database (Pool)');
+        connection.release();
+    })
+    .catch((err: any) => console.error('❌ MySQL connection failed:', err));
 
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);

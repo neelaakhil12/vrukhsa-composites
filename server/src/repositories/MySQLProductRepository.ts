@@ -1,0 +1,122 @@
+import { IProduct } from '../models/Product';
+import { IProductRepository } from './IProductRepository';
+import pool from '../lib/mysql';
+
+export class MySQLProductRepository implements IProductRepository {
+    async findAll(filters: any = {}): Promise<any[]> {
+        const { showDeleted, category, search } = filters;
+        let query = 'SELECT * FROM Product';
+        const params: any[] = [];
+        const conditions: string[] = [];
+
+        if (showDeleted !== 'true' && showDeleted !== true) {
+            conditions.push('isDeleted = ?');
+            params.push(false);
+        }
+
+        if (category) {
+            conditions.push('category LIKE ?');
+            params.push(`%${category}%`);
+        }
+
+        if (search) {
+            conditions.push('(name LIKE ? OR description LIKE ? OR category LIKE ?)');
+            const searchPattern = `%${search}%`;
+            params.push(searchPattern, searchPattern, searchPattern);
+        }
+
+        if (conditions.length > 0) {
+            query += ' WHERE ' + conditions.join(' AND ');
+        }
+
+        query += ' ORDER BY createdAt DESC';
+
+        const [rows] = await pool.query(query, params);
+        return (rows as any[]).map(this.mapRowToProduct);
+    }
+
+    async findById(id: string): Promise<any | null> {
+        const [rows] = await pool.query('SELECT * FROM Product WHERE id = ?', [id]);
+        const result = (rows as any[])[0];
+        return result ? this.mapRowToProduct(result) : null;
+    }
+
+    async create(data: any): Promise<any> {
+        const id = data.id || `VC-${Date.now()}`;
+        const cleanData = {
+            id,
+            name: data.name,
+            category: data.category || '',
+            subCategory: data.subCategory || '',
+            description: data.description || '',
+            images: JSON.stringify(data.images || []),
+            price: parseFloat(data.price) || 0,
+            originalPrice: parseFloat(data.originalPrice) || 0,
+            discountPercentage: parseFloat(data.discountPercentage) || 0,
+            stockQuantity: parseInt(data.stockQuantity) || 0,
+            variants: JSON.stringify(data.variants || []),
+            specifications: JSON.stringify(data.specifications || {}),
+            warranty: data.warranty || '',
+            seller: data.seller || 'Vruksha Composites',
+            isSponsored: data.isSponsored ? 1 : 0,
+            deliveryTime: data.deliveryTime || '4-5 business days',
+            isDeleted: 0,
+            createdAt: new Date(),
+            updatedAt: new Date()
+        };
+
+        const keys = Object.keys(cleanData).join(', ');
+        const placeholders = Object.keys(cleanData).map(() => '?').join(', ');
+        const values = Object.values(cleanData);
+
+        await pool.query(`INSERT INTO Product (${keys}) VALUES (${placeholders})`, values);
+        return this.findById(id);
+    }
+
+    async update(id: string, data: any): Promise<any | null> {
+        const { _id, __v, id: dataId, createdAt, ...updateData } = data;
+        const updates: string[] = [];
+        const params: any[] = [];
+
+        for (const [key, value] of Object.entries(updateData)) {
+            updates.push(`${key} = ?`);
+            if (['images', 'variants', 'specifications'].includes(key)) {
+                params.push(JSON.stringify(value));
+            } else if (key === 'isSponsored' || key === 'isDeleted') {
+                params.push(value ? 1 : 0);
+            } else {
+                params.push(value);
+            }
+        }
+
+        if (updates.length === 0) return this.findById(id);
+
+        updates.push('updatedAt = ?');
+        params.push(new Date());
+        params.push(id);
+
+        await pool.query(`UPDATE Product SET ${updates.join(', ')} WHERE id = ?`, params);
+        return this.findById(id);
+    }
+
+    async delete(id: string): Promise<boolean> {
+        await pool.query('UPDATE Product SET isDeleted = 1 WHERE id = ?', [id]);
+        return true;
+    }
+
+    async restore(id: string): Promise<boolean> {
+        await pool.query('UPDATE Product SET isDeleted = 0 WHERE id = ?', [id]);
+        return true;
+    }
+
+    private mapRowToProduct(row: any): any {
+        return {
+            ...row,
+            images: typeof row.images === 'string' ? JSON.parse(row.images) : row.images,
+            variants: typeof row.variants === 'string' ? JSON.parse(row.variants) : row.variants,
+            specifications: typeof row.specifications === 'string' ? JSON.parse(row.specifications) : row.specifications,
+            isSponsored: !!row.isSponsored,
+            isDeleted: !!row.isDeleted
+        };
+    }
+}

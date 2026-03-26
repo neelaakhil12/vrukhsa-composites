@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import prisma from '../lib/prisma';
+import pool from '../lib/mysql';
 import { categories as defaultCategories } from '../data/products';
 
 const DEFAULT_SETTINGS_VALUE = {
@@ -19,13 +19,20 @@ const DEFAULT_SETTINGS_VALUE = {
 
 export const getSettings = async (req: Request, res: Response) => {
     try {
-        let setting = await prisma.setting.findUnique({ where: { key: 'main' } });
+        const [rows] = await pool.query('SELECT * FROM Setting WHERE `key` = ?', ['main']);
+        const setting = (rows as any[])[0];
+
         if (!setting) {
-            setting = await prisma.setting.create({
-                data: { key: 'main', value: DEFAULT_SETTINGS_VALUE as any }
-            });
+            await pool.query(
+                'INSERT INTO Setting (`key`, value) VALUES (?, ?)',
+                ['main', JSON.stringify(DEFAULT_SETTINGS_VALUE)]
+            );
+            res.json(DEFAULT_SETTINGS_VALUE);
+            return;
         }
-        res.json(setting.value);
+
+        const value = typeof setting.value === 'string' ? JSON.parse(setting.value) : setting.value;
+        res.json(value);
     } catch (error) {
         console.error('Error reading settings:', error);
         res.status(500).json({ message: 'Error reading site settings' });
@@ -34,17 +41,24 @@ export const getSettings = async (req: Request, res: Response) => {
 
 export const updateSettings = async (req: Request, res: Response) => {
     try {
-        // Get current settings first to merge
-        let current = await prisma.setting.findUnique({ where: { key: 'main' } });
-        const currentValue = (current?.value as any) || {};
+        const [rows] = await pool.query('SELECT * FROM Setting WHERE `key` = ?', ['main']);
+        const current = (rows as any[])[0];
+        const currentValue = current ? (typeof current.value === 'string' ? JSON.parse(current.value) : current.value) : {};
         const merged = { ...currentValue, ...req.body };
 
-        const updated = await prisma.setting.upsert({
-            where: { key: 'main' },
-            update: { value: merged as any },
-            create: { key: 'main', value: merged as any },
-        });
-        res.json(updated.value);
+        if (!current) {
+            await pool.query(
+                'INSERT INTO Setting (`key`, value) VALUES (?, ?)',
+                ['main', JSON.stringify(merged)]
+            );
+        } else {
+            await pool.query(
+                'UPDATE Setting SET value = ? WHERE `key` = ?',
+                [JSON.stringify(merged), 'main']
+            );
+        }
+        
+        res.json(merged);
     } catch (error) {
         console.error('Error updating settings:', error);
         res.status(500).json({ message: 'Error updating site settings' });

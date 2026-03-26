@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import prisma from '../lib/prisma';
+import pool from '../lib/mysql';
 
 interface JwtPayload {
     id: string | number;
@@ -16,10 +16,12 @@ export const protect = async (req: Request, res: Response, next: NextFunction) =
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET || 'secret') as JwtPayload;
-        const user = await prisma.user.findUnique({
-            where: { id: parseInt(String(decoded.id)) },
-            select: { id: true, name: true, email: true, role: true }
-        });
+        const [rows] = await pool.query(
+            'SELECT id, name, email, role FROM User WHERE id = ?',
+            [parseInt(String(decoded.id))]
+        );
+        const user = (rows as any[])[0];
+
         if (!user) {
             res.status(401).json({ message: 'Not authorized, user not found' });
             return;

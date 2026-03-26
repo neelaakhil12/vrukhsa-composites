@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import prisma from '../lib/prisma';
+import pool from '../lib/mysql';
 
 const DEFAULT_DELIVERY_STAGES = [
     { status: 'placed', label: 'Order Placed', isCompleted: false },
@@ -10,9 +10,6 @@ const DEFAULT_DELIVERY_STAGES = [
     { status: 'delivered', label: 'Delivered', isCompleted: false },
 ];
 
-// @desc    Create new order
-// @route   POST /api/orders
-// @access  Private
 export const createOrder = async (req: Request, res: Response) => {
     try {
         const userId = (req as any).user.id;
@@ -33,158 +30,166 @@ export const createOrder = async (req: Request, res: Response) => {
             completedAt: s.status === 'placed' ? new Date().toISOString() : undefined,
         }));
 
-        const orderData: any = {
-            userId: parseInt(String(userId)),
-            items,
-            totalAmount: parseFloat(String(totalAmount)) || 0,
-            shippingAddress: { ...shippingAddress, email: userEmail || shippingAddress?.email || '' },
-            paymentMethod,
-            paymentStatus: 'pending',
-            orderStatus: 'placed',
-            deliveryStages: stages,
-            expectedDeliveryDate,
-        };
+        const [result] = await pool.query(
+            'INSERT INTO Order (userId, items, totalAmount, shippingAddress, paymentMethod, paymentStatus, orderStatus, deliveryStages, expectedDeliveryDate, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [
+                parseInt(String(userId)),
+                JSON.stringify(items),
+                parseFloat(String(totalAmount)) || 0,
+                JSON.stringify({ ...shippingAddress, email: userEmail || shippingAddress?.email || '' }),
+                paymentMethod,
+                'pending',
+                'placed',
+                JSON.stringify(stages),
+                expectedDeliveryDate,
+                new Date(),
+                new Date()
+            ]
+        );
 
-        const order = await (prisma.order.create as any)({ data: orderData });
-        res.status(201).json(order);
+        const orderId = (result as any).insertId;
+        const [rows] = await pool.query('SELECT * FROM Order WHERE id = ?', [orderId]);
+        res.status(201).json(mapRowToOrder((rows as any[])[0]));
     } catch (error) {
         console.error('Create order error:', error);
         res.status(500).json({ message: 'Server Error', error });
     }
 };
 
-// @desc    Get logged-in user's orders
-// @route   GET /api/orders
-// @access  Private
 export const getMyOrders = async (req: Request, res: Response) => {
     try {
         const userId = (req as any).user.id;
-        const orders = await prisma.order.findMany({
-            where: { userId: parseInt(String(userId)) },
-            orderBy: { createdAt: 'desc' },
-            include: { user: { select: { name: true, email: true } } }
-        });
-        res.json(orders);
+        const [rows] = await pool.query(
+            'SELECT o.*, u.name as userName, u.email as userEmail FROM Order o JOIN User u ON o.userId = u.id WHERE o.userId = ? ORDER BY o.createdAt DESC',
+            [parseInt(String(userId))]
+        );
+        res.json((rows as any[]).map(mapRowToOrder));
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error });
     }
 };
 
-// @desc    Get order by ID
-// @route   GET /api/orders/:id
-// @access  Private
 export const getOrderById = async (req: Request, res: Response) => {
     try {
         const orderId = String(req.params.id);
         const reqUser = (req as any).user;
-        const order = await prisma.order.findUnique({
-            where: { id: orderId },
-            include: { user: { select: { name: true, email: true } } }
-        });
+        const [rows] = await pool.query(
+            'SELECT o.*, u.name as userName, u.email as userEmail FROM Order o JOIN User u ON o.userId = u.id WHERE o.id = ?',
+            [orderId]
+        );
+        const order = (rows as any[])[0];
 
         if (!order) { res.status(404).json({ message: 'Order not found' }); return; }
-        if (reqUser.role !== 'admin' && (order as any).userId !== parseInt(String(reqUser.id))) {
+        if (reqUser.role !== 'admin' && order.userId !== parseInt(String(reqUser.id))) {
             res.status(403).json({ message: 'Not authorized' }); return;
         }
-        res.json(order);
+        res.json(mapRowToOrder(order));
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error });
     }
 };
 
-// @desc    Cancel order
-// @route   PUT /api/orders/:id/cancel
-// @access  Private
 export const cancelOrder = async (req: Request, res: Response) => {
     try {
         const orderId = String(req.params.id);
         const userId = (req as any).user.id;
-        const order = await prisma.order.findUnique({ where: { id: orderId } });
+        const [rows] = await pool.query('SELECT * FROM Order WHERE id = ?', [orderId]);
+        const order = (rows as any[])[0];
 
-        if (!order || (order as any).userId !== parseInt(String(userId))) {
+        if (!order || order.userId !== parseInt(String(userId))) {
             res.status(404).json({ message: 'Order not found' }); return;
         }
         if (['shipped', 'delivered'].includes(order.orderStatus)) {
             res.status(400).json({ message: 'Cannot cancel shipped/delivered orders' }); return;
         }
 
-        const updated = await prisma.order.update({ where: { id: orderId }, data: { orderStatus: 'cancelled' } });
-        res.json(updated);
+        await pool.query('UPDATE Order SET orderStatus = ? WHERE id = ?', ['cancelled', orderId]);
+        res.json({ ...order, orderStatus: 'cancelled' });
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error });
     }
 };
 
-// @desc    Get all orders (Admin)
-// @route   GET /api/orders/admin/all
-// @access  Private/Admin
 export const getAllOrders = async (req: Request, res: Response) => {
     try {
-        const orders = await prisma.order.findMany({
-            orderBy: { createdAt: 'desc' },
-            include: { user: { select: { name: true, email: true } } }
-        });
-        res.json(orders);
+        const [rows] = await pool.query(
+            'SELECT o.*, u.name as userName, u.email as userEmail FROM Order o JOIN User u ON o.userId = u.id ORDER BY o.createdAt DESC'
+        );
+        res.json((rows as any[]).map(mapRowToOrder));
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error });
     }
 };
 
-// @desc    Update order status (Admin)
-// @route   PUT /api/orders/:id/status
-// @access  Private/Admin
 export const updateOrderStatus = async (req: Request, res: Response) => {
     try {
         const orderId = String(req.params.id);
         const { orderStatus } = req.body;
-        const order = await prisma.order.findUnique({ where: { id: orderId } });
+        const [rows] = await pool.query('SELECT * FROM Order WHERE id = ?', [orderId]);
+        const order = (rows as any[])[0];
         if (!order) { res.status(404).json({ message: 'Order not found' }); return; }
 
-        const stages = (((order as any).deliveryStages as any[]) || DEFAULT_DELIVERY_STAGES).map((s: any) =>
+        const currentStages = typeof order.deliveryStages === 'string' ? JSON.parse(order.deliveryStages) : (order.deliveryStages || DEFAULT_DELIVERY_STAGES);
+        const stages = currentStages.map((s: any) =>
             s.status === orderStatus ? { ...s, isCompleted: true, completedAt: s.completedAt || new Date().toISOString() } : s
         );
 
-        const updated = await (prisma.order.update as any)({ where: { id: orderId }, data: { orderStatus, deliveryStages: stages } });
-        res.json(updated);
+        await pool.query(
+            'UPDATE Order SET orderStatus = ?, deliveryStages = ? WHERE id = ?',
+            [orderStatus, JSON.stringify(stages), orderId]
+        );
+        res.json({ ...order, orderStatus, deliveryStages: stages });
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error });
     }
 };
 
-// @desc    Update payment status (Admin)
-// @route   PUT /api/orders/:id/payment
-// @access  Private/Admin
 export const updatePaymentStatus = async (req: Request, res: Response) => {
     try {
         const orderId = String(req.params.id);
         const { paymentStatus } = req.body;
-        const updated = await prisma.order.update({ where: { id: orderId }, data: { paymentStatus } });
-        res.json(updated);
+        await pool.query('UPDATE Order SET paymentStatus = ? WHERE id = ?', [paymentStatus, orderId]);
+        res.json({ message: 'Payment status updated' });
     } catch (error) {
         res.status(500).json({ message: 'Server Error', error });
     }
 };
 
-// @desc    Update tracking info (Admin)
-// @route   PUT /api/orders/:id/tracking
-// @access  Private/Admin
 export const updateOrderTracking = async (req: Request, res: Response) => {
     try {
         const orderId = String(req.params.id);
         const { trackingNumber, trackingLink, trackingPlatform, expectedDeliveryDate, internalNote, deliveryStages } = req.body;
 
-        const updateData: any = {};
-        if (trackingNumber !== undefined) updateData.trackingNumber = trackingNumber;
-        if (trackingLink !== undefined) updateData.trackingLink = trackingLink;
-        if (trackingPlatform !== undefined) updateData.trackingPlatform = trackingPlatform;
-        if (expectedDeliveryDate) updateData.expectedDeliveryDate = new Date(expectedDeliveryDate);
-        if (internalNote !== undefined) updateData.internalNote = internalNote;
-        if (deliveryStages !== undefined) updateData.deliveryStages = deliveryStages;
+        const updates: string[] = [];
+        const params: any[] = [];
 
-        const updated = await (prisma.order.update as any)({ where: { id: orderId }, data: updateData });
-        res.json(updated);
+        if (trackingNumber !== undefined) { updates.push('trackingNumber = ?'); params.push(trackingNumber); }
+        if (trackingLink !== undefined) { updates.push('trackingLink = ?'); params.push(trackingLink); }
+        if (trackingPlatform !== undefined) { updates.push('trackingPlatform = ?'); params.push(trackingPlatform); }
+        if (expectedDeliveryDate) { updates.push('expectedDeliveryDate = ?'); params.push(new Date(expectedDeliveryDate)); }
+        if (internalNote !== undefined) { updates.push('internalNote = ?'); params.push(internalNote); }
+        if (deliveryStages !== undefined) { updates.push('deliveryStages = ?'); params.push(JSON.stringify(deliveryStages)); }
+
+        if (updates.length > 0) {
+            params.push(orderId);
+            await pool.query(`UPDATE Order SET ${updates.join(', ')} WHERE id = ?`, params);
+        }
+
+        const [rows] = await pool.query('SELECT * FROM Order WHERE id = ?', [orderId]);
+        res.json(mapRowToOrder((rows as any[])[0]));
     } catch (error) {
         console.error('Tracking update error:', error);
         res.status(500).json({ message: 'Server Error', error });
     }
+};
+
+const mapRowToOrder = (row: any) => {
+    if (!row) return null;
+    return {
+        ...row,
+        items: typeof row.items === 'string' ? JSON.parse(row.items) : row.items,
+        shippingAddress: typeof row.shippingAddress === 'string' ? JSON.parse(row.shippingAddress) : row.shippingAddress,
+        deliveryStages: typeof row.deliveryStages === 'string' ? JSON.parse(row.deliveryStages) : row.deliveryStages,
+        user: row.userName ? { name: row.userName, email: row.userEmail } : undefined
+    };
 };

@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import prisma from '../lib/prisma';
+import pool from '../lib/mysql';
 
 // @desc    Get user's cart
 // @route   GET /api/cart
@@ -8,17 +8,19 @@ export const getCart = async (req: Request, res: Response) => {
     try {
         const userId = (req as any).user.id;
 
-        let cart = await prisma.cart.findUnique({
-            where: { userId },
-        });
+        const [rows] = await pool.query('SELECT * FROM Cart WHERE userId = ?', [userId]);
+        let cart = (rows as any[])[0];
 
         if (!cart) {
-            cart = await prisma.cart.create({
-                data: { userId, items: [] }
-            });
+            await pool.query(
+                'INSERT INTO Cart (userId, items, createdAt, updatedAt) VALUES (?, ?, ?, ?)',
+                [userId, JSON.stringify([]), new Date(), new Date()]
+            );
+            return res.json({ userId, items: [] });
         }
 
-        res.json(cart);
+        const items = typeof cart.items === 'string' ? JSON.parse(cart.items) : (cart.items || []);
+        res.json({ ...cart, items });
     } catch (error) {
         console.error('Get cart error:', error);
         res.status(500).json({ message: 'Server Error', error });
@@ -34,20 +36,27 @@ export const addToCart = async (req: Request, res: Response) => {
         const { productId, quantity = 1, variant } = req.body;
 
         // Verify product exists
-        const product = await prisma.product.findUnique({ where: { id: productId } });
-        if (!product) {
+        const [products] = await pool.query('SELECT * FROM Product WHERE id = ?', [productId]);
+        if ((products as any[]).length === 0) {
             res.status(404).json({ message: 'Product not found' });
             return;
         }
 
-        let cart = await prisma.cart.findUnique({ where: { userId } });
+        const [carts] = await pool.query('SELECT * FROM Cart WHERE userId = ?', [userId]);
+        let cart = (carts as any[])[0];
+
         if (!cart) {
-            cart = await prisma.cart.create({ data: { userId, items: [] } });
+            await pool.query(
+                'INSERT INTO Cart (userId, items, createdAt, updatedAt) VALUES (?, ?, ?, ?)',
+                [userId, JSON.stringify([]), new Date(), new Date()]
+            );
+            const [newCarts] = await pool.query('SELECT * FROM Cart WHERE userId = ?', [userId]);
+            cart = (newCarts as any[])[0];
         }
 
-        const items = (cart.items as any[]) || [];
+        const items = typeof cart.items === 'string' ? JSON.parse(cart.items) : (cart.items || []);
         const existingItemIndex = items.findIndex(
-            item => item.productId === productId && JSON.stringify(item.variant) === JSON.stringify(variant)
+            (item: any) => item.productId === productId && JSON.stringify(item.variant) === JSON.stringify(variant)
         );
 
         if (existingItemIndex > -1) {
@@ -56,12 +65,12 @@ export const addToCart = async (req: Request, res: Response) => {
             items.push({ productId, quantity, variant });
         }
 
-        const updatedCart = await prisma.cart.update({
-            where: { userId },
-            data: { items: items as any }
-        });
+        await pool.query(
+            'UPDATE Cart SET items = ?, updatedAt = ? WHERE userId = ?',
+            [JSON.stringify(items), new Date(), userId]
+        );
 
-        res.json(updatedCart);
+        res.json({ ...cart, items });
     } catch (error) {
         console.error('Add to cart error:', error);
         res.status(500).json({ message: 'Server Error', error });
@@ -82,15 +91,16 @@ export const updateCartItem = async (req: Request, res: Response) => {
             return;
         }
 
-        const cart = await prisma.cart.findUnique({ where: { userId } });
+        const [carts] = await pool.query('SELECT * FROM Cart WHERE userId = ?', [userId]);
+        const cart = (carts as any[])[0];
         if (!cart) {
             res.status(404).json({ message: 'Cart not found' });
             return;
         }
 
-        const items = (cart.items as any[]) || [];
+        const items = typeof cart.items === 'string' ? JSON.parse(cart.items) : (cart.items || []);
         const itemIndex = items.findIndex(
-            item => item.productId === productId && (variant ? JSON.stringify(item.variant) === JSON.stringify(variant) : true)
+            (item: any) => item.productId === productId && (variant ? JSON.stringify(item.variant) === JSON.stringify(variant) : true)
         );
 
         if (itemIndex === -1) {
@@ -100,12 +110,12 @@ export const updateCartItem = async (req: Request, res: Response) => {
 
         items[itemIndex].quantity = quantity;
 
-        const updatedCart = await prisma.cart.update({
-            where: { userId },
-            data: { items: items as any }
-        });
+        await pool.query(
+            'UPDATE Cart SET items = ?, updatedAt = ? WHERE userId = ?',
+            [JSON.stringify(items), new Date(), userId]
+        );
 
-        res.json(updatedCart);
+        res.json({ ...cart, items });
     } catch (error) {
         console.error('Update cart error:', error);
         res.status(500).json({ message: 'Server Error', error });
@@ -119,25 +129,26 @@ export const removeFromCart = async (req: Request, res: Response) => {
     try {
         const userId = (req as any).user.id;
         const { productId } = req.params;
-        const { variant } = req.query; // Optional variant filtering
+        const { variant } = req.query;
 
-        const cart = await prisma.cart.findUnique({ where: { userId } });
+        const [carts] = await pool.query('SELECT * FROM Cart WHERE userId = ?', [userId]);
+        const cart = (carts as any[])[0];
         if (!cart) {
             res.status(404).json({ message: 'Cart not found' });
             return;
         }
 
-        let items = (cart.items as any[]) || [];
+        let items = typeof cart.items === 'string' ? JSON.parse(cart.items) : (cart.items || []);
         items = items.filter(
-            item => !(item.productId === productId && (variant ? JSON.stringify(item.variant) === String(variant) : true))
+            (item: any) => !(item.productId === productId && (variant ? JSON.stringify(item.variant) === String(variant) : true))
         );
 
-        const updatedCart = await prisma.cart.update({
-            where: { userId },
-            data: { items: items as any }
-        });
+        await pool.query(
+            'UPDATE Cart SET items = ?, updatedAt = ? WHERE userId = ?',
+            [JSON.stringify(items), new Date(), userId]
+        );
 
-        res.json(updatedCart);
+        res.json({ ...cart, items });
     } catch (error) {
         console.error('Remove from cart error:', error);
         res.status(500).json({ message: 'Server Error', error });
@@ -151,10 +162,10 @@ export const clearCart = async (req: Request, res: Response) => {
     try {
         const userId = (req as any).user.id;
 
-        const updatedCart = await prisma.cart.update({
-            where: { userId },
-            data: { items: [] }
-        });
+        await pool.query(
+            'UPDATE Cart SET items = ?, updatedAt = ? WHERE userId = ?',
+            [JSON.stringify([]), new Date(), userId]
+        );
 
         res.json({ message: 'Cart cleared', items: [] });
     } catch (error) {

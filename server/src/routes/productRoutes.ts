@@ -1,12 +1,12 @@
 import express from 'express';
 import { ProductController } from '../controllers/productController';
 import { ProductService } from '../services/ProductService';
-import { PrismaProductRepository } from '../repositories/PrismaProductRepository';
+import { MySQLProductRepository } from '../repositories/MySQLProductRepository';
 
 const router = express.Router();
 
-// Always use Prisma (MySQL) repository
-const repository = new PrismaProductRepository();
+// Always use MySQL repository
+const repository = new MySQLProductRepository();
 const productService = new ProductService(repository);
 const productController = new ProductController(productService);
 
