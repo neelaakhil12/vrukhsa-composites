@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { useAuth } from '@/context/AuthContext';
 import { fetchMyOrders, cancelOrderAPI } from '@/api/client';
 import { toast } from 'sonner';
+import { getImageUrl } from '@/lib/utils';
 
 interface OrderItem {
   productId: string;
@@ -219,7 +220,7 @@ const Orders = () => {
                       <div key={index} className="p-4 flex gap-4">
                         <div className="w-20 h-20 flex-shrink-0">
                           <img
-                            src={item.image}
+                            src={getImageUrl(item.image)}
                             alt={item.name}
                             className="w-full h-full object-cover rounded-sm"
                           />

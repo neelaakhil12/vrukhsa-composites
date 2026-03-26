@@ -9,6 +9,7 @@ import { useCart } from '@/context/CartContext';
 import { toast } from '@/hooks/use-toast';
 import { fetchProductById } from '@/api/client';
 import { Product } from '@/data/products';
+import { getImageUrl } from '@/lib/utils';
 
 const ProductDetail = () => {
   const { productId } = useParams<{ productId: string }>();
@@ -125,7 +126,7 @@ const ProductDetail = () => {
             {/* Main Image */}
             <div className="relative aspect-square bg-muted rounded-sm overflow-hidden mb-4 group">
               <img
-                src={product.images[selectedImage]}
+                src={getImageUrl(product.images[selectedImage])}
                 alt={product.name}
                 className="w-full h-full object-contain transition-transform duration-300 group-hover:scale-110"
               />
@@ -147,7 +148,7 @@ const ProductDetail = () => {
                     className={`w-20 h-20 flex-shrink-0 rounded-sm overflow-hidden border-2 transition-colors ${selectedImage === index ? 'border-primary' : 'border-transparent hover:border-primary/50'
                       }`}
                   >
-                    <img src={img} alt="" className="w-full h-full object-cover" />
+                    <img src={getImageUrl(img)} alt="" className="w-full h-full object-cover" />
                   </button>
                 ))}
               </div>

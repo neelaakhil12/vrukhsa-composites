@@ -3,6 +3,7 @@ import { Star, Heart } from 'lucide-react';
 import { Product } from '@/data/products';
 import { useCart } from '@/context/CartContext';
 import { toast } from '@/hooks/use-toast';
+import { getImageUrl } from '@/lib/utils';
 
 interface ProductCardProps {
   product: Product;
@@ -41,7 +42,7 @@ const ProductCard = ({ product, layout = 'grid' }: ProductCardProps) => {
       <Link to={`/product/${product.id}`} className="product-card flex gap-4 p-4">
         <div className="w-40 h-40 flex-shrink-0 bg-muted rounded-sm overflow-hidden">
           <img
-            src={product.images[0]}
+            src={getImageUrl(product.images[0])}
             alt={product.name}
             className="w-full h-full object-cover"
           />
@@ -91,7 +92,7 @@ const ProductCard = ({ product, layout = 'grid' }: ProductCardProps) => {
     <Link to={`/product/${product.id}`} className="product-card group">
       <div className="relative aspect-square bg-muted overflow-hidden">
         <img
-          src={product.images[0]}
+          src={getImageUrl(product.images[0])}
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           loading="lazy"

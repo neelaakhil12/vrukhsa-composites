@@ -12,6 +12,24 @@ const api = axios.create({
     },
 });
 
+// Add interceptor for 401 Unauthorized responses
+api.interceptors.response.use(
+    (response) => response,
+    (error) => {
+        if (error.response && error.response.status === 401) {
+            console.warn('⚠️ Session expired or unauthorized. Redirecting to login...');
+            // In a real app, you'd trigger a logout in AuthContext, 
+            // but a page reload is a safe way to force the ProtectedRoute to catch the missing session.
+            if (window.location.pathname.startsWith('/admin')) {
+                window.location.href = '/admin/login';
+            } else {
+                window.location.href = '/login';
+            }
+        }
+        return Promise.reject(error);
+    }
+);
+
 console.log('🚀 API Client Initialized with Base URL:', API_BASE_URL);
 
 // Mock data for demo/offline use

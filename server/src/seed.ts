@@ -34,6 +34,7 @@ async function main() {
     await prisma.user.upsert({
         where: { email: 'admin@vrukshacomposites.com' },
         update: {
+            name: 'Vruksha Admin',
             password: adminPassword,
             role: 'admin'
         },
@@ -46,7 +47,28 @@ async function main() {
     });
     console.log('✅ Seeded admin user: admin@vrukshacomposites.com / admin123');
 
-    // 1. Seed Categories
+    // 1. Seed Site Settings (Appearance & CMS)
+    console.log('⚙️ Seeding Site Settings...');
+    const defaultSettings = {
+        banners: [
+            { id: 'b1', image: '/nature-fiber images/banner1.jpg', title: 'Quality Fiber Composites', subtitle: 'Advanced materials for modern engineering', link: '/search' }
+        ],
+        categories: categories.map(c => ({ ...c, image: '' })),
+        featuredProducts: [],
+        aboutUs: '<h2>About Us</h2><p>Vruksha Composites is a leader in advanced materials...</p>',
+        privacyPolicy: '<h2>Privacy Policy</h2><p>Your privacy is important to us...</p>',
+        termsAndConditions: '<h2>Terms & Conditions</h2><p>Please read these terms carefully...</p>',
+        returnsPolicy: '<h2>Returns Policy</h2><p>Our standard return policy apply...</p>'
+    };
+
+    await prisma.setting.upsert({
+        where: { key: 'main' },
+        update: { value: defaultSettings },
+        create: { key: 'main', value: defaultSettings }
+    });
+    console.log('✅ Seeded site settings!');
+
+    // 2. Seed Categories (Standalone table)
     console.log('📂 Seeding Categories...');
     for (const cat of categories) {
         await prisma.category.upsert({
@@ -57,7 +79,7 @@ async function main() {
     }
     console.log(`✅ Seeded ${categories.length} categories!`);
 
-    // 2. Seed Products
+    // 3. Seed Products
     console.log('📦 Seeding Products...');
     // Use the file we copied into the server/src/data directory
     const masterPath = path.join(__dirname, './data/products_master.json');
@@ -65,9 +87,10 @@ async function main() {
         throw new Error(`Master JSON not found at ${masterPath}`);
     }
     const masterData = JSON.parse(fs.readFileSync(masterPath, 'utf-8'));
-    const products = masterData.products;
+    const productsList = masterData.products;
 
-    for (const item of products) {
+    for (const item of productsList) {
+        // ... (rest of product logic remains same)
         const specs: any = {};
         if (item.specifications) {
             Object.entries(item.specifications).forEach(([key, value]) => {
@@ -147,7 +170,7 @@ async function main() {
         });
     }
 
-    console.log(`✅ Seeded ${products.length} products!`);
+    console.log(`✅ Seeded ${productsList.length} products!`);
 }
 
 main()

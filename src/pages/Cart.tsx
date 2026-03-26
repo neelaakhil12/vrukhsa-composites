@@ -4,6 +4,7 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { useCart } from '@/context/CartContext';
 import { toast } from '@/hooks/use-toast';
+import { getImageUrl } from '@/lib/utils';
 
 const Cart = () => {
   const { items, updateQuantity, removeFromCart, subtotal, discount, total } = useCart();
@@ -72,7 +73,7 @@ const Cart = () => {
                   <div key={item.id} className="cart-item">
                     <Link to={`/product/${item.id}`} className="w-24 h-24 flex-shrink-0 bg-muted rounded-sm overflow-hidden">
                       <img
-                        src={item.image}
+                        src={getImageUrl(item.image)}
                         alt={item.name}
                         className="w-full h-full object-cover"
                       />
