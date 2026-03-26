@@ -5,7 +5,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.admin = exports.protect = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const prisma_1 = __importDefault(require("../lib/prisma"));
+const mysql_1 = __importDefault(require("../lib/mysql"));
 const protect = async (req, res, next) => {
     const token = req.cookies.jwt;
     if (!token) {
@@ -14,10 +14,8 @@ const protect = async (req, res, next) => {
     }
     try {
         const decoded = jsonwebtoken_1.default.verify(token, process.env.JWT_SECRET || 'secret');
-        const user = await prisma_1.default.user.findUnique({
-            where: { id: parseInt(String(decoded.id)) },
-            select: { id: true, name: true, email: true, role: true }
-        });
+        const [rows] = await mysql_1.default.query('SELECT id, name, email, role FROM User WHERE id = ?', [parseInt(String(decoded.id))]);
+        const user = rows[0];
         if (!user) {
             res.status(401).json({ message: 'Not authorized, user not found' });
             return;

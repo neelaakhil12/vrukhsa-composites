@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getMe = exports.logoutUser = exports.loginUser = exports.registerUser = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
-const prisma_1 = __importDefault(require("../lib/prisma"));
+const mysql_1 = __importDefault(require("../lib/mysql"));
 const validation_1 = require("../utils/validation");
 const generateToken = (id) => {
     return jsonwebtoken_1.default.sign({ id }, process.env.JWT_SECRET || 'secret', {
@@ -21,16 +21,15 @@ const registerUser = async (req, res) => {
             return;
         }
         const { name, email, password } = result.data;
-        const userExists = await prisma_1.default.user.findUnique({ where: { email } });
-        if (userExists) {
+        const [existingUsers] = await mysql_1.default.query('SELECT * FROM User WHERE email = ?', [email]);
+        if (existingUsers.length > 0) {
             res.status(400).json({ message: 'User already exists' });
             return;
         }
         const hashedPassword = await bcryptjs_1.default.hash(password, 10);
-        const user = await prisma_1.default.user.create({
-            data: { name, email, password: hashedPassword }
-        });
-        const token = generateToken(user.id);
+        const [insertResult] = await mysql_1.default.query('INSERT INTO User (name, email, password, role, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)', [name, email, hashedPassword, 'user', new Date(), new Date()]);
+        const userId = insertResult.insertId;
+        const token = generateToken(userId);
         res.cookie('jwt', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -38,10 +37,10 @@ const registerUser = async (req, res) => {
             maxAge: 30 * 24 * 60 * 60 * 1000,
         });
         res.status(201).json({
-            _id: user.id,
-            name: user.name,
-            email: user.email,
-            role: user.role,
+            _id: userId,
+            name,
+            email,
+            role: 'user',
         });
     }
     catch (error) {
@@ -58,7 +57,8 @@ const loginUser = async (req, res) => {
             return;
         }
         const { email, password } = result.data;
-        const user = await prisma_1.default.user.findUnique({ where: { email } });
+        const [users] = await mysql_1.default.query('SELECT * FROM User WHERE email = ?', [email]);
+        const user = users[0];
         if (!user) {
             res.status(401).json({ message: 'Invalid email or password' });
             return;

@@ -15,7 +15,7 @@ const orderRoutes_1 = require("./routes/orderRoutes");
 const settingsRoutes_1 = __importDefault(require("./routes/settingsRoutes"));
 const paymentRoutes_1 = require("./routes/paymentRoutes");
 const uploadRoutes_1 = require("./routes/uploadRoutes");
-const prisma_1 = __importDefault(require("./lib/prisma"));
+const mysql_1 = __importDefault(require("./lib/mysql"));
 dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5000;
@@ -30,6 +30,10 @@ const allowedOrigins = [
     'http://localhost:5173',
     'https://indigo-rail-928301.hostingersite.com',
     'http://indigo-rail-928301.hostingersite.com',
+    'https://vrukshacomposites.com',
+    'http://vrukshacomposites.com',
+    'https://www.vrukshacomposites.com',
+    'http://www.vrukshacomposites.com',
     process.env.FRONTEND_URL
 ].filter(Boolean);
 app.use((0, cors_1.default)({
@@ -46,7 +50,7 @@ app.use((0, cors_1.default)({
             return callback(null, true);
         }
         // Also allow any vercel.app or hostingersite.com domain
-        if (origin.endsWith('.vercel.app') || origin.endsWith('.hostingersite.com')) {
+        if (origin.endsWith('.vercel.app') || origin.endsWith('.hostingersite.com') || origin.endsWith('vrukshacomposites.com')) {
             return callback(null, true);
         }
         callback(new Error('Not allowed by CORS'));
@@ -63,10 +67,12 @@ app.use('/api/orders', orderRoutes_1.orderRouter);
 app.use('/api/settings', settingsRoutes_1.default);
 app.use('/api/payment', paymentRoutes_1.paymentRouter);
 app.use('/api/upload', uploadRoutes_1.uploadRouter);
-// Serve static files (uploads)
-app.use('/uploads', express_1.default.static(path_1.default.join(process.cwd(), 'uploads')));
+// Serve static files (uploads) - Use absolute path relative to current file to be robust on Hostinger
+const UPLOADS_PATH = path_1.default.join(__dirname, '../../uploads');
+app.use('/uploads', express_1.default.static(UPLOADS_PATH));
 // Serve frontend static files
-app.use(express_1.default.static(path_1.default.join(__dirname, '../../dist')));
+const DIST_PATH = path_1.default.join(__dirname, '../../dist');
+app.use(express_1.default.static(DIST_PATH));
 // Health Check
 app.get('/api/health', (req, res) => {
     res.send('Vruksha Composites API is running');
@@ -84,9 +90,12 @@ app.get('*', (req, res) => {
     res.sendFile(path_1.default.join(__dirname, '../../dist/index.html'));
 });
 // Test DB Connection
-prisma_1.default.$connect()
-    .then(() => console.log('✅ Connected to MySQL Database (Prisma)'))
-    .catch((err) => console.error('❌ MySQL/Prisma connection failed:', err));
+mysql_1.default.getConnection()
+    .then(connection => {
+    console.log('✅ Connected to MySQL Database (Pool)');
+    connection.release();
+})
+    .catch((err) => console.error('❌ MySQL connection failed:', err));
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
 });

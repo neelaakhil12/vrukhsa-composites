@@ -7,10 +7,10 @@ exports.productRouter = void 0;
 const express_1 = __importDefault(require("express"));
 const productController_1 = require("../controllers/productController");
 const ProductService_1 = require("../services/ProductService");
-const PrismaProductRepository_1 = require("../repositories/PrismaProductRepository");
+const MySQLProductRepository_1 = require("../repositories/MySQLProductRepository");
 const router = express_1.default.Router();
-// Always use Prisma (MySQL) repository
-const repository = new PrismaProductRepository_1.PrismaProductRepository();
+// Always use MySQL repository
+const repository = new MySQLProductRepository_1.MySQLProductRepository();
 const productService = new ProductService_1.ProductService(repository);
 const productController = new productController_1.ProductController(productService);
 // GET /api/products - Get all products
