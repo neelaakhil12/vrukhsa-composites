@@ -80,6 +80,53 @@ app.use(express_1.default.static(DIST_PATH));
 app.get('/api/health', (req, res) => {
     res.send('Vruksha Composites API is running');
 });
+// Temporary Debug Endpoint for MySQL connectivity
+app.get('/api/debug-db', async (req, res) => {
+    const results = {
+        env: {
+            hasDatabaseUrl: !!process.env.DATABASE_URL,
+            dbUrlPreview: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 15) + '...' : null,
+            nodeEnv: process.env.NODE_ENV
+        },
+        tests: {}
+    };
+    const mysql = require('mysql2/promise');
+    // Test 1: Using the exact environment variable
+    if (process.env.DATABASE_URL) {
+        try {
+            const conn = await mysql.createConnection(process.env.DATABASE_URL + '&connectTimeout=3000');
+            await conn.query('SELECT 1');
+            results.tests.envVarTest = 'SUCCESS';
+            await conn.end();
+        }
+        catch (e) {
+            results.tests.envVarTest = `FAILED: ${e.message}`;
+        }
+    }
+    // Test 2: Localhost specifically
+    try {
+        const rootUrl = 'mysql://u410995534_harishneela71:CodTech%401208@localhost:3306/u410995534_vrukshacompos?connectTimeout=3000';
+        const conn2 = await mysql.createConnection(rootUrl);
+        await conn2.query('SELECT 1');
+        results.tests.localhostTest = 'SUCCESS';
+        await conn2.end();
+    }
+    catch (e) {
+        results.tests.localhostTest = `FAILED: ${e.message}`;
+    }
+    // Test 3: The Hostinger domain hostname
+    try {
+        const hstgrUrl = 'mysql://u410995534_harishneela71:CodTech%401208@srv1855.hstgr.io:3306/u410995534_vrukshacompos?connectTimeout=3000';
+        const conn3 = await mysql.createConnection(hstgrUrl);
+        await conn3.query('SELECT 1');
+        results.tests.hstgrTest = 'SUCCESS';
+        await conn3.end();
+    }
+    catch (e) {
+        results.tests.hstgrTest = `FAILED: ${e.message}`;
+    }
+    res.json(results);
+});
 // Catch-all route for SPA (using middleware to avoid path-to-regexp issues)
 app.use((req, res) => {
     // Check if it's an API request - don't serve index.html for missing API endpoints
