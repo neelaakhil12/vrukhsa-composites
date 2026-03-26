@@ -1,6 +1,10 @@
-// This is a wrapper file for Hostinger to find the server entry point
-// It simply runs the compiled backend from the server/dist folder.
-import('./server/dist/index.js').catch(err => {
-    console.error('Failed to start server from wrapper:', err);
-    process.exit(1);
-});
+console.log('--- SERVER WRAPPER STARTING ---');
+console.log('Current directory:', process.cwd());
+console.log('Node version:', process.version);
+
+import('./server/dist/index.js')
+    .then(() => console.log('✅ Entry point loaded successfully'))
+    .catch(err => {
+        console.error('❌ FATAL: Failed to load entry point:', err);
+        process.exit(1);
+    });
