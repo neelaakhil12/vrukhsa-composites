@@ -6,26 +6,23 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getRazorpayConfig = exports.verifyPayment = exports.createRazorpayOrder = void 0;
 const razorpay_1 = __importDefault(require("razorpay"));
 const crypto_1 = __importDefault(require("crypto"));
-const Order_1 = __importDefault(require("../models/Order"));
+const mysql_1 = __importDefault(require("../lib/mysql"));
 const razorpay = new razorpay_1.default({
     key_id: process.env.RAZORPAY_KEY_ID || '',
     key_secret: process.env.RAZORPAY_KEY_SECRET || '',
 });
 // @desc    Create Razorpay Order
-// @route   POST /api/payment/create-order
-// @access  Private
 const createRazorpayOrder = async (req, res) => {
     try {
         const { amount, receipt } = req.body;
         const options = {
-            amount: Math.round(amount * 100), // amount in the smallest currency unit (paise)
+            amount: Math.round(amount * 100),
             currency: 'INR',
             receipt: receipt || `receipt_${Date.now()}`,
         };
         const order = await razorpay.orders.create(options);
-        if (!order) {
+        if (!order)
             return res.status(500).send('Error creating Razorpay order');
-        }
         res.json(order);
     }
     catch (error) {
@@ -35,11 +32,9 @@ const createRazorpayOrder = async (req, res) => {
 };
 exports.createRazorpayOrder = createRazorpayOrder;
 // @desc    Verify Razorpay Payment
-// @route   POST /api/payment/verify
-// @access  Private
 const verifyPayment = async (req, res) => {
     try {
-        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderId // Our internal MongoDB order ID
+        const { razorpay_order_id, razorpay_payment_id, razorpay_signature, orderId // Our internal MySQL order ID
          } = req.body;
         const sign = razorpay_order_id + '|' + razorpay_payment_id;
         const expectedSign = crypto_1.default
@@ -47,17 +42,9 @@ const verifyPayment = async (req, res) => {
             .update(sign.toString())
             .digest('hex');
         if (razorpay_signature === expectedSign) {
-            // Payment verified
-            const order = await Order_1.default.findById(orderId);
-            if (!order) {
-                return res.status(404).json({ message: 'Order not found' });
-            }
-            order.paymentStatus = 'paid';
-            order.razorpayOrderId = razorpay_order_id;
-            order.razorpayPaymentId = razorpay_payment_id;
-            order.razorpaySignature = razorpay_signature;
-            await order.save();
-            return res.status(200).json({ message: 'Payment verified successfully', order });
+            // Payment verified - Update MySQL Order
+            await mysql_1.default.query('UPDATE Order SET paymentStatus = ?, razorpayOrderId = ?, razorpayPaymentId = ?, razorpaySignature = ? WHERE id = ?', ['paid', razorpay_order_id, razorpay_payment_id, razorpay_signature, orderId]);
+            return res.status(200).json({ message: 'Payment verified successfully' });
         }
         else {
             return res.status(400).json({ message: 'Invalid signature sent!' });
@@ -70,8 +57,6 @@ const verifyPayment = async (req, res) => {
 };
 exports.verifyPayment = verifyPayment;
 // @desc    Get Razorpay Config
-// @route   GET /api/payment/config
-// @access  Private
 const getRazorpayConfig = async (req, res) => {
     res.json({ keyId: process.env.RAZORPAY_KEY_ID || '' });
 };

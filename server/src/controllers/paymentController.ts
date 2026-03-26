@@ -1,7 +1,7 @@
 import { Request, Response } from 'express';
 import Razorpay from 'razorpay';
 import crypto from 'crypto';
-import Order from '../models/Order';
+import pool from '../lib/mysql';
 
 const razorpay = new Razorpay({
     key_id: process.env.RAZORPAY_KEY_ID || '',
@@ -9,23 +9,18 @@ const razorpay = new Razorpay({
 });
 
 // @desc    Create Razorpay Order
-// @route   POST /api/payment/create-order
-// @access  Private
 export const createRazorpayOrder = async (req: Request, res: Response) => {
     try {
         const { amount, receipt } = req.body;
 
         const options = {
-            amount: Math.round(amount * 100), // amount in the smallest currency unit (paise)
+            amount: Math.round(amount * 100),
             currency: 'INR',
             receipt: receipt || `receipt_${Date.now()}`,
         };
 
         const order = await razorpay.orders.create(options);
-
-        if (!order) {
-            return res.status(500).send('Error creating Razorpay order');
-        }
+        if (!order) return res.status(500).send('Error creating Razorpay order');
 
         res.json(order);
     } catch (error) {
@@ -35,15 +30,13 @@ export const createRazorpayOrder = async (req: Request, res: Response) => {
 };
 
 // @desc    Verify Razorpay Payment
-// @route   POST /api/payment/verify
-// @access  Private
 export const verifyPayment = async (req: Request, res: Response) => {
     try {
         const {
             razorpay_order_id,
             razorpay_payment_id,
             razorpay_signature,
-            orderId // Our internal MongoDB order ID
+            orderId // Our internal MySQL order ID
         } = req.body;
 
         const sign = razorpay_order_id + '|' + razorpay_payment_id;
@@ -53,19 +46,13 @@ export const verifyPayment = async (req: Request, res: Response) => {
             .digest('hex');
 
         if (razorpay_signature === expectedSign) {
-            // Payment verified
-            const order = await Order.findById(orderId);
-            if (!order) {
-                return res.status(404).json({ message: 'Order not found' });
-            }
+            // Payment verified - Update MySQL Order
+            await pool.query(
+                'UPDATE Order SET paymentStatus = ?, razorpayOrderId = ?, razorpayPaymentId = ?, razorpaySignature = ? WHERE id = ?',
+                ['paid', razorpay_order_id, razorpay_payment_id, razorpay_signature, orderId]
+            );
 
-            order.paymentStatus = 'paid';
-            order.razorpayOrderId = razorpay_order_id;
-            order.razorpayPaymentId = razorpay_payment_id;
-            order.razorpaySignature = razorpay_signature;
-            await order.save();
-
-            return res.status(200).json({ message: 'Payment verified successfully', order });
+            return res.status(200).json({ message: 'Payment verified successfully' });
         } else {
             return res.status(400).json({ message: 'Invalid signature sent!' });
         }
@@ -76,8 +63,6 @@ export const verifyPayment = async (req: Request, res: Response) => {
 };
 
 // @desc    Get Razorpay Config
-// @route   GET /api/payment/config
-// @access  Private
 export const getRazorpayConfig = async (req: Request, res: Response) => {
     res.json({ keyId: process.env.RAZORPAY_KEY_ID || '' });
 };
