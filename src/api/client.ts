@@ -151,18 +151,7 @@ export const verifyPaymentAPI = async (data: {
     return response.data;
 };
 
-// Auth Mock for Deployment (Vercel)
-api.interceptors.response.use(
-    response => response,
-    error => {
-        // Handle both failed responses and network errors for auth/me
-        const isAuthMe = error.config?.url?.includes('/auth/me');
-        if (isAuthMe) {
-            console.log('🛡️ Intercepted /auth/me failure, providing mock admin for demo');
-            return Promise.resolve({ data: MOCK_ADMIN_USER, status: 200 });
-        }
-        return Promise.reject(error);
-    }
-);
+// Auth interceptors removed to enforce real authentication
+// (Previously contained a mock fallback for /auth/me)
 
 export default api;

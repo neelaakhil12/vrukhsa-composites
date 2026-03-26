@@ -41,7 +41,17 @@ const AdminDashboard = () => {
     const [isSavingSettings, setIsSavingSettings] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [orders, setOrders] = useState<any[]>([]);
-    const [siteSettings, setSiteSettings] = useState<any>({ banners: [], categories: [] });
+    const [siteSettings, setSiteSettings] = useState<any>(() => {
+        const saved = localStorage.getItem('vruksha_admin_settings_draft');
+        return saved ? JSON.parse(saved) : { banners: [], categories: [] };
+    });
+
+    // Save to localStorage whenever siteSettings changes
+    useEffect(() => {
+        if (siteSettings) {
+            localStorage.setItem('vruksha_admin_settings_draft', JSON.stringify(siteSettings));
+        }
+    }, [siteSettings]);
 
     useEffect(() => {
         if (user && user.role === 'admin') {
@@ -58,6 +68,10 @@ const AdminDashboard = () => {
                 api.get('/orders/admin/all')
             ]);
             setProducts(productsData);
+            // Only update site settings if we don't have a local draft, or optionally merge
+            // For now, let's always fetch the latest from server but allow local edits to persist if we just refreshed
+            // If the user just loaded the page, we want the server data. 
+            // If they are editing, we want the draft.
             setSiteSettings(settingsData);
             setOrders(ordersData);
         } catch (error) {
@@ -111,7 +125,7 @@ const AdminDashboard = () => {
     if (authLoading) return <div className="flex items-center justify-center min-h-screen"><Loader2 className="animate-spin" /></div>;
 
     if (!user || user.role !== 'admin') {
-        return <Navigate to="/login" replace />;
+        return <Navigate to="/admin/login" replace />;
     }
 
     const filteredProducts = products.filter(p =>
@@ -577,6 +591,20 @@ const AdminDashboard = () => {
 
                     {activeTab === 'content' && (
                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">
+                            <div className="flex justify-end">
+                                <button
+                                    onClick={() => {
+                                        if (confirm('Are you sure you want to discard your unsaved changes?')) {
+                                            fetchData(); // Re-fetch from server
+                                            localStorage.removeItem('vruksha_admin_settings_draft');
+                                        }
+                                    }}
+                                    className="text-xs text-red-500 hover:text-red-700 font-bold uppercase tracking-widest flex items-center gap-1"
+                                >
+                                    <Trash2 size={14} />
+                                    Discard Draft
+                                </button>
+                            </div>
                             <section className="bg-white rounded-3xl p-8 shadow-sm border border-gray-100">
                                 <div className="mb-8">
                                     <h2 className="text-xl lg:text-2xl font-bold text-gray-900">Contact Information</h2>
@@ -676,6 +704,7 @@ const AdminDashboard = () => {
                                             setIsSavingSettings(true);
                                             await api.patch('/settings', siteSettings);
                                             toast.success('Content settings updated successfully');
+                                            localStorage.removeItem('vruksha_admin_settings_draft');
                                         } catch (error) {
                                             toast.error('Failed to update settings');
                                         } finally {

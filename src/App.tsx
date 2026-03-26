@@ -19,6 +19,8 @@ import Login from "./pages/Login";
 import AdminDashboard from "./pages/AdminDashboard";
 import CmsPage from "./pages/CmsPage";
 import OrderTracking from "./pages/OrderTracking";
+import AdminLogin from "./pages/admin/AdminLogin";
+import ProtectedAdminRoute from "./components/ProtectedAdminRoute";
 
 import ProductForm from "./pages/admin/ProductForm";
 import OrderDetailPage from "./pages/admin/OrderDetailPage";
@@ -45,11 +47,13 @@ const App = () => (
               <Route path="/orders" element={<Orders />} />
               <Route path="/orders/:orderId" element={<OrderTracking />} />
               <Route path="/account" element={<Account />} />
-              <Route path="/admin" element={<AdminDashboard />} />
-              <Route path="/admin/products/new" element={<ProductForm />} />
-              <Route path="/admin/products/edit/:productId" element={<ProductForm />} />
-              <Route path="/admin/orders/:orderId" element={<OrderDetailPage />} />
-              <Route path="/admin/orders/:orderId/tracking" element={<AdminOrderTrackingPage />} />
+              <Route path="/admin/login" element={<AdminLogin />} />
+              
+              <Route path="/admin" element={<ProtectedAdminRoute><AdminDashboard /></ProtectedAdminRoute>} />
+              <Route path="/admin/products/new" element={<ProtectedAdminRoute><ProductForm /></ProtectedAdminRoute>} />
+              <Route path="/admin/products/edit/:productId" element={<ProtectedAdminRoute><ProductForm /></ProtectedAdminRoute>} />
+              <Route path="/admin/orders/:orderId" element={<ProtectedAdminRoute><OrderDetailPage /></ProtectedAdminRoute>} />
+              <Route path="/admin/orders/:orderId/tracking" element={<ProtectedAdminRoute><AdminOrderTrackingPage /></ProtectedAdminRoute>} />
 
               <Route path="/about" element={<CmsPage pageType="aboutUs" title="About Us" />} />
               <Route path="/privacy" element={<CmsPage pageType="privacyPolicy" title="Privacy Policy" />} />
