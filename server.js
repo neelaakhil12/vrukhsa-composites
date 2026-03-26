@@ -1,16 +1,23 @@
-// Standard CommonJS Wrapper for Hostinger
+// Standard CommonJS Wrapper for Hostinger with Error Logging
 const path = require('path');
+const fs = require('fs');
+
+const logFile = path.join(__dirname, 'ERROR_LOG.txt');
+const log = (msg) => {
+    const formattedMsg = `[${new Date().toISOString()}] ${msg}\n`;
+    console.log(formattedMsg);
+    fs.appendFileSync(logFile, formattedMsg);
+};
+
+log('--- STARTING SERVER ---');
 const indexPath = path.join(__dirname, 'server', 'dist', 'index.js');
 
-console.log('--- STARTING SERVER (CommonJS) ---');
-console.log('Current directory:', process.cwd());
-console.log('Index path:', indexPath);
-
 try {
-    // We use require() correctly here since type: module is removed
+    log(`Attempting to load index from: ${indexPath}`);
     require(indexPath);
-    console.log('✅ Server loaded successfully');
+    log('✅ Server loaded successfully');
 } catch (err) {
-    console.error('❌ FATAL: Failed to load entry point via require():', err);
+    log('❌ FATAL ERROR DURING STARTUP:');
+    log(err.stack || err.message || JSON.stringify(err));
     process.exit(1);
 }
