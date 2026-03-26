@@ -37,6 +37,21 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
             }
         };
         checkUser();
+
+        // Multi-tab logout sync: Listen for changes in localStorage
+        const handleStorageChange = (e: StorageEvent) => {
+            if (e.key === 'vruksha_logout_event') {
+                console.log('🔄 Multi-tab logout detected. Clearing session...');
+                setUser(null);
+                // Redirect if currently on a protected route
+                if (window.location.pathname.startsWith('/admin')) {
+                    window.location.href = '/admin/login';
+                }
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+        return () => window.removeEventListener('storage', handleStorageChange);
     }, []);
 
     const login = async (formData: any) => {
@@ -73,6 +88,8 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         try {
             await api.post('/auth/logout');
             setUser(null);
+            // Trigger storage event for other tabs
+            localStorage.setItem('vruksha_logout_event', Date.now().toString());
             toast({ title: 'Logged Out', description: 'See you soon!' });
         } catch (error) {
             console.error(error);

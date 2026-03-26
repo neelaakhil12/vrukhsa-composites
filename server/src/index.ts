@@ -28,6 +28,10 @@ const allowedOrigins = [
     'http://localhost:5173',
     'https://indigo-rail-928301.hostingersite.com',
     'http://indigo-rail-928301.hostingersite.com',
+    'https://vrukshacomposites.com',
+    'http://vrukshacomposites.com',
+    'https://www.vrukshacomposites.com',
+    'http://www.vrukshacomposites.com',
     process.env.FRONTEND_URL
 ].filter(Boolean);
 
@@ -47,7 +51,7 @@ app.use(cors({
         }
 
         // Also allow any vercel.app or hostingersite.com domain
-        if (origin.endsWith('.vercel.app') || origin.endsWith('.hostingersite.com')) {
+        if (origin.endsWith('.vercel.app') || origin.endsWith('.hostingersite.com') || origin.endsWith('vrukshacomposites.com')) {
             return callback(null, true);
         }
 
@@ -67,11 +71,13 @@ app.use('/api/settings', settingsRouter);
 app.use('/api/payment', paymentRouter);
 app.use('/api/upload', uploadRouter);
 
-// Serve static files (uploads)
-app.use('/uploads', express.static(path.join(process.cwd(), 'uploads')));
+// Serve static files (uploads) - Use absolute path relative to current file to be robust on Hostinger
+const UPLOADS_PATH = path.join(__dirname, '../../uploads');
+app.use('/uploads', express.static(UPLOADS_PATH));
 
 // Serve frontend static files
-app.use(express.static(path.join(__dirname, '../../dist')));
+const DIST_PATH = path.join(__dirname, '../../dist');
+app.use(express.static(DIST_PATH));
 
 // Health Check
 app.get('/api/health', (req: Request, res: Response) => {

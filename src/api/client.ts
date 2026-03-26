@@ -32,13 +32,8 @@ api.interceptors.response.use(
 
 console.log('🚀 API Client Initialized with Base URL:', API_BASE_URL);
 
-// Mock data for demo/offline use
-const MOCK_ADMIN_USER = {
-    _id: 'mock-admin-id',
-    name: 'Dev Admin',
-    email: 'admin@vruksha.com',
-    role: 'admin'
-};
+// Mock data for demo/offline use (removed to enforce real authentication)
+// Note: fetchProducts and others still use real API calls.
 
 export const fetchProducts = async (category?: string, search?: string, sale?: string) => {
     try {
