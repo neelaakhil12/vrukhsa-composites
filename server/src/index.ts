@@ -12,7 +12,10 @@ import { paymentRouter } from './routes/paymentRoutes';
 import { uploadRouter } from './routes/uploadRoutes';
 import pool from './lib/mysql';
 
-dotenv.config();
+// Load .env from project root (two levels up from server/dist/)
+dotenv.config({ path: path.join(__dirname, '../../.env') });
+dotenv.config({ path: path.join(__dirname, '../.env') });
+dotenv.config(); // also try CWD
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -84,19 +87,19 @@ app.get('/api/health', (req: Request, res: Response) => {
     res.send('Vruksha Composites API is running');
 });
 
-// Catch-all route for SPA
-app.get('*', (req: Request, res: Response) => {
+// Catch-all route for SPA (using middleware to avoid path-to-regexp issues)
+app.use((req: Request, res: Response) => {
     // Check if it's an API request - don't serve index.html for missing API endpoints
     if (req.path.startsWith('/api')) {
         return res.status(404).json({ message: 'API endpoint not found' });
     }
     
-    // Explicitly prevent caching for the root index.html to ensure users always get the latest build
+    // Serve the SPA index.html for all other routes
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
     
-    res.sendFile(path.join(__dirname, '../../dist/index.html'));
+    res.sendFile(path.join(DIST_PATH, 'index.html'));
 });
 
 // Test DB Connection

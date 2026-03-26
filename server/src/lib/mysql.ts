@@ -1,30 +1,34 @@
 import mysql from 'mysql2/promise';
 import dotenv from 'dotenv';
+import path from 'path';
 
+// Try multiple .env locations for Hostinger compatibility
+dotenv.config({ path: path.join(__dirname, '../../.env') });
+dotenv.config({ path: path.join(__dirname, '../.env') });
 dotenv.config();
 
 const dbUrl = process.env.DATABASE_URL;
 
+let pool: mysql.Pool;
+
 if (!dbUrl) {
-    throw new Error('DATABASE_URL is not defined in environment variables');
+    console.error('⚠️ DATABASE_URL is not defined. Database features will not work.');
+    // Create a dummy pool that will fail gracefully on queries
+    pool = mysql.createPool({ host: 'localhost', user: 'root', database: 'test' });
+} else {
+    // Parse database URL
+    const url = new URL(dbUrl);
+    pool = mysql.createPool({
+        host: url.hostname,
+        port: parseInt(url.port) || 3306,
+        user: url.username,
+        password: decodeURIComponent(url.password),
+        database: url.pathname.substring(1),
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0,
+    });
 }
 
-// Parse Prisma-style database URL
-// Example: mysql://user:password@host:port/database
-const url = new URL(dbUrl);
-
-const pool = mysql.createPool({
-    host: url.hostname,
-    port: parseInt(url.port) || 3306,
-    user: url.username,
-    password: decodeURIComponent(url.password),
-    database: url.pathname.substring(1), // remove leading /
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
-    ssl: {
-        rejectUnauthorized: false
-    }
-});
-
 export default pool;
+

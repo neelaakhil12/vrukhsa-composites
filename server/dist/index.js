@@ -16,7 +16,10 @@ const settingsRoutes_1 = __importDefault(require("./routes/settingsRoutes"));
 const paymentRoutes_1 = require("./routes/paymentRoutes");
 const uploadRoutes_1 = require("./routes/uploadRoutes");
 const mysql_1 = __importDefault(require("./lib/mysql"));
-dotenv_1.default.config();
+// Load .env from project root (two levels up from server/dist/)
+dotenv_1.default.config({ path: path_1.default.join(__dirname, '../../.env') });
+dotenv_1.default.config({ path: path_1.default.join(__dirname, '../.env') });
+dotenv_1.default.config(); // also try CWD
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5000;
 const FRONTEND_URL = process.env.FRONTEND_URL || 'http://localhost:8080';
@@ -77,17 +80,17 @@ app.use(express_1.default.static(DIST_PATH));
 app.get('/api/health', (req, res) => {
     res.send('Vruksha Composites API is running');
 });
-// Catch-all route for SPA
-app.get('*', (req, res) => {
+// Catch-all route for SPA (using middleware to avoid path-to-regexp issues)
+app.use((req, res) => {
     // Check if it's an API request - don't serve index.html for missing API endpoints
     if (req.path.startsWith('/api')) {
         return res.status(404).json({ message: 'API endpoint not found' });
     }
-    // Explicitly prevent caching for the root index.html to ensure users always get the latest build
+    // Serve the SPA index.html for all other routes
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
     res.setHeader('Expires', '0');
-    res.sendFile(path_1.default.join(__dirname, '../../dist/index.html'));
+    res.sendFile(path_1.default.join(DIST_PATH, 'index.html'));
 });
 // Test DB Connection
 mysql_1.default.getConnection()
