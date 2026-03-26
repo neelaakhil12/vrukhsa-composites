@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && cd server && npm install && npm run build && npx prisma generate",
+    "build": "vite build && cd server && npm install && npx prisma generate && npm run build",
     "start": "node server/dist/index.js",
     "lint": "eslint .",
     "preview": "vite preview"

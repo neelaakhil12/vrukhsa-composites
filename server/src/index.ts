@@ -102,7 +102,7 @@ app.get('*', (req: Request, res: Response) => {
 // Test DB Connection
 prisma.$connect()
     .then(() => console.log('✅ Connected to MySQL Database (Prisma)'))
-    .catch((err) => console.error('❌ MySQL/Prisma connection failed:', err));
+    .catch((err: any) => console.error('❌ MySQL/Prisma connection failed:', err));
 
 app.listen(PORT, () => {
     console.log(`🚀 Server running on port ${PORT}`);
