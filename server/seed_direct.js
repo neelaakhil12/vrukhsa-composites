@@ -2,6 +2,7 @@
 const mysql = require('mysql2/promise');
 const fs = require('fs');
 const path = require('path');
+const bcrypt = require('bcryptjs');
 
 const DB_URL = 'mysql://u410995534_vruksha:Codtech@1208@srv1855.hstgr.io:3306/u410995534_vruksha';
 
@@ -9,9 +10,9 @@ const DB_URL = 'mysql://u410995534_vruksha:Codtech@1208@srv1855.hstgr.io:3306/u4
 const config = {
   host: 'srv1855.hstgr.io',
   port: 3306,
-  user: 'u410995534_vruksha',
-  password: 'Codtech@1208',
-  database: 'u410995534_vruksha'
+  user: 'u410995534_harishneela71',
+  password: 'CodTech@1208',
+  database: 'u410995534_vrukshacompos'
 };
 
 const categories = [
@@ -37,6 +38,19 @@ async function main() {
   console.log('🚀 Connecting to MySQL directly...');
   const conn = await mysql.createConnection(config);
   console.log('✅ Connected!');
+
+  // 0. Seed Admin User
+  console.log('👤 Seeding Admin User...');
+  const adminPassword = await bcrypt.hash('admin123', 10);
+  const timestamp = new Date().toISOString().slice(0, 19).replace('T', ' ');
+  
+  // Use a try-catch for the user insert to handle existing users if necessary, 
+  // or use INSERT IGNORE / ON DUPLICATE KEY UPDATE
+  await conn.execute(
+    'INSERT INTO User (name, email, password, role, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE password = ?, role = ?, updatedAt = ?',
+    ['Vruksha Admin', 'admin@vrukshacomposites.com', adminPassword, 'admin', timestamp, timestamp, adminPassword, 'admin', timestamp]
+  );
+  console.log('✅ Seeded admin user: admin@vrukshacomposites.com / admin123');
 
   // 1. Clean existing data
   console.log('🧹 Cleaning existing data...');
