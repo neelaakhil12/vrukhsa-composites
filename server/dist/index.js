@@ -127,6 +127,17 @@ app.get('/api/debug-db', async (req, res) => {
     }
     res.json(results);
 });
+// Endpoint to view internal MySQL errors
+app.get('/api/db-error-log', (req, res) => {
+    const fs = require('fs');
+    try {
+        const errorLog = fs.readFileSync(path_1.default.join(__dirname, '../../db_error.json'), 'utf8');
+        res.type('json').send(errorLog);
+    }
+    catch (e) {
+        res.json({ message: "No database errors logged or file does not exist yet." });
+    }
+});
 // Catch-all route for SPA (using middleware to avoid path-to-regexp issues)
 app.use((req, res) => {
     // Check if it's an API request - don't serve index.html for missing API endpoints

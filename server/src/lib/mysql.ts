@@ -22,8 +22,9 @@ if (!dbUrl) {
     // CRITICAL HOSTINGER FIX:
     // Hostinger often rejects internal connections to its own external domain (srv1855.hstgr.io)
     // because it sees the server's own IPv6 address and thinks it's an unauthorized remote connection.
-    // We force it to use 'localhost' internally, which bypasses the Remote MySQL firewall.
-    const safeHost = 'localhost';
+    // We force it to use '127.0.0.1' internally, which bypasses the Remote MySQL firewall
+    // and forces IPv4 instead of 'localhost' which may resolve to '::1' on Node 18+.
+    const safeHost = '127.0.0.1';
 
     pool = mysql.createPool({
         host: safeHost,
@@ -35,6 +36,20 @@ if (!dbUrl) {
         connectionLimit: 10,
         queueLimit: 0,
     });
+    
+    // Intercept all queries to catch any 500 errors natively
+    const originalQuery = pool.query.bind(pool);
+    pool.query = async function(...args: any[]) {
+        try {
+            // @ts-ignore
+            return await originalQuery(...args);
+        } catch (e: any) {
+            const fs = require('fs');
+            const errLog = { time: new Date().toISOString(), message: e.message, code: e.code, sqlMessage: e.sqlMessage, sql: e.sql, args };
+            fs.writeFileSync(path.join(__dirname, '../../db_error.json'), JSON.stringify(errLog, null, 2));
+            throw e;
+        }
+    } as any;
 }
 
 export default pool;

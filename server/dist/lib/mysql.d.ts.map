@@ -1,1 +1,1 @@
-{"version":3,"file":"mysql.d.ts","sourceRoot":"","sources":["../../src/lib/mysql.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,MAAM,gBAAgB,CAAC;AAWnC,QAAA,IAAI,IAAI,EAAE,KAAK,CAAC,IAAI,CAAC;AA4BrB,eAAe,IAAI,CAAC"}
+{"version":3,"file":"mysql.d.ts","sourceRoot":"","sources":["../../src/lib/mysql.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,MAAM,gBAAgB,CAAC;AAWnC,QAAA,IAAI,IAAI,EAAE,KAAK,CAAC,IAAI,CAAC;AA2CrB,eAAe,IAAI,CAAC"}
