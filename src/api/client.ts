@@ -17,13 +17,17 @@ api.interceptors.response.use(
     (response) => response,
     (error) => {
         if (error.response && error.response.status === 401) {
-            console.warn('⚠️ Session expired or unauthorized. Redirecting to login...');
-            // In a real app, you'd trigger a logout in AuthContext, 
-            // but a page reload is a safe way to force the ProtectedRoute to catch the missing session.
-            if (window.location.pathname.startsWith('/admin')) {
-                window.location.href = '/admin/login';
-            } else {
-                window.location.href = '/login';
+            const requestUrl = error.config?.url || '';
+            
+            // DON'T redirect on auth-check calls — these are expected to fail for guests
+            const isAuthCheck = requestUrl.includes('/auth/me') || requestUrl.includes('/auth/login') || requestUrl.includes('/auth/register');
+            
+            if (!isAuthCheck) {
+                console.warn('⚠️ Session expired or unauthorized for:', requestUrl);
+                // Only redirect for admin routes — regular users just see a "please login" message
+                if (window.location.pathname.startsWith('/admin') && !window.location.pathname.includes('/admin/login')) {
+                    window.location.href = '/admin/login';
+                }
             }
         }
         return Promise.reject(error);
