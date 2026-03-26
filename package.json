@@ -5,7 +5,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build && npx prisma generate --schema=server/prisma/schema.prisma && tsc -p server/tsconfig.json",
+    "build": "vite build && tsc -p server/tsconfig.json",
+    "postinstall": "npx -y prisma@5.22.0 generate --schema=server/prisma/schema.prisma",
     "start": "node server/dist/index.js",
     "lint": "eslint .",
     "preview": "vite preview"
