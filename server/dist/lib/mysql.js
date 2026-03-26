@@ -20,8 +20,13 @@ if (!dbUrl) {
 else {
     // Parse database URL
     const url = new URL(dbUrl);
+    // CRITICAL HOSTINGER FIX:
+    // Hostinger often rejects internal connections to its own external domain (srv1855.hstgr.io)
+    // because it sees the server's own IPv6 address and thinks it's an unauthorized remote connection.
+    // We force it to use 'localhost' internally, which bypasses the Remote MySQL firewall.
+    const safeHost = 'localhost';
     pool = promise_1.default.createPool({
-        host: url.hostname,
+        host: safeHost,
         port: parseInt(url.port) || 3306,
         user: url.username,
         password: decodeURIComponent(url.password),
