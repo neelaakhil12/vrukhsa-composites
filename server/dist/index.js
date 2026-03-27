@@ -85,11 +85,26 @@ app.get('/api/debug-db', async (req, res) => {
     const results = {
         env: {
             hasDatabaseUrl: !!process.env.DATABASE_URL,
-            dbUrlPreview: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 15) + '...' : null,
+            dbUrlPreview: process.env.DATABASE_URL ? process.env.DATABASE_URL.substring(0, 35) + '...' : null,
             nodeEnv: process.env.NODE_ENV
         },
+        envUrl: {},
         tests: {}
     };
+    if (process.env.DATABASE_URL) {
+        try {
+            const u = new URL(process.env.DATABASE_URL);
+            results.envUrl = {
+                username: u.username,
+                passwordRef: decodeURIComponent(u.password),
+                host: u.hostname,
+                db: u.pathname.substring(1)
+            };
+        }
+        catch (e) {
+            results.envUrl = { error: e.message };
+        }
+    }
     const mysql = require('mysql2/promise');
     // Test 1: Using the exact environment variable
     if (process.env.DATABASE_URL) {
