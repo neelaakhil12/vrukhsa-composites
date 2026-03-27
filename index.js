@@ -1,4 +1,5 @@
 // Entry point for Hostinger Phusion Passenger
+// Last Deploy: 2026-03-27T13:16:00Z
 // This file must be in the ROOT directory
 const path = require('path');
 const fs = require('fs');
