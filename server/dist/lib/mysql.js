@@ -18,24 +18,9 @@ if (!dbUrl) {
     pool = promise_1.default.createPool({ host: 'localhost', user: 'root', database: 'test' });
 }
 else {
-    // Parse database URL
-    const url = new URL(dbUrl);
-    // CRITICAL HOSTINGER FIX:
-    // Hostinger often rejects internal connections to its own external domain (srv1855.hstgr.io)
-    // because it sees the server's own IPv6 address and thinks it's an unauthorized remote connection.
-    // We force it to use '127.0.0.1' internally, which bypasses the Remote MySQL firewall
-    // and forces IPv4 instead of 'localhost' which may resolve to '::1' on Node 18+.
-    const safeHost = '127.0.0.1';
-    pool = promise_1.default.createPool({
-        host: safeHost,
-        port: parseInt(url.port) || 3306,
-        user: url.username,
-        password: decodeURIComponent(url.password),
-        database: url.pathname.substring(1),
-        waitForConnections: true,
-        connectionLimit: 10,
-        queueLimit: 0,
-    });
+    // We force it to use 'localhost' internally, which bypasses the Remote MySQL firewall
+    const safeUrl = dbUrl.replace('srv1855.hstgr.io', 'localhost');
+    pool = promise_1.default.createPool(safeUrl);
     // Intercept all queries to catch any 500 errors natively
     const originalQuery = pool.query.bind(pool);
     pool.query = async function (...args) {
