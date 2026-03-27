@@ -33,9 +33,9 @@ export const getSettings = async (req: Request, res: Response) => {
 
         const value = typeof setting.value === 'string' ? JSON.parse(setting.value) : setting.value;
         res.json(value);
-    } catch (error) {
+    } catch (error: any) {
         console.error('Error reading settings:', error);
-        res.status(500).json({ message: 'Error reading site settings' });
+        res.status(500).json({ message: 'Error reading site settings', error: error.message, stack: error.stack });
     }
 };
 

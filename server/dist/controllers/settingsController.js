@@ -34,7 +34,7 @@ const getSettings = async (req, res) => {
     }
     catch (error) {
         console.error('Error reading settings:', error);
-        res.status(500).json({ message: 'Error reading site settings' });
+        res.status(500).json({ message: 'Error reading site settings', error: error.message, stack: error.stack });
     }
 };
 exports.getSettings = getSettings;

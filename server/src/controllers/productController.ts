@@ -9,8 +9,8 @@ export class ProductController {
             const filters = req.query;
             const products = await this.productService.getAllProducts(filters);
             res.json(products);
-        } catch (error) {
-            res.status(500).json({ message: 'Error fetching products', error });
+        } catch (error: any) {
+            res.status(500).json({ message: 'Error fetching products', error: error.message, stack: error.stack });
         }
     };
 

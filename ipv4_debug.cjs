@@ -31,6 +31,7 @@ async function run() {
         await fetchIPv4('/api/debug-db');
         await fetchIPv4('/api/products');
         await fetchIPv4('/api/settings');
+        await fetchIPv4('/api/db-error-log');
     } catch (e) {
         console.error("Fatal Error:", e);
     }

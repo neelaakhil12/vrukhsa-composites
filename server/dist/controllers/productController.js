@@ -11,7 +11,7 @@ class ProductController {
                 res.json(products);
             }
             catch (error) {
-                res.status(500).json({ message: 'Error fetching products', error });
+                res.status(500).json({ message: 'Error fetching products', error: error.message, stack: error.stack });
             }
         };
         this.getProductById = async (req, res) => {
