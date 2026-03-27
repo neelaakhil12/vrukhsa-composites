@@ -147,6 +147,21 @@ app.get('/api/admin/migrate', async (req, res) => {
         }
         // Check tables
         const [tables] = await mysql_1.default.query('SHOW TABLES');
+        // Create Default Admin User
+        const bcrypt = require('bcryptjs');
+        const hashedPassword = await bcrypt.hash('admin123', 10);
+        try {
+            await mysql_1.default.query('INSERT INTO User (name, email, password, role) VALUES (?, ?, ?, ?)', ['Admin', 'admin@vrukshacomposites.com', hashedPassword, 'admin']);
+            results.push('ADMIN_CREATED');
+        }
+        catch (adminErr) {
+            if (adminErr.code === 'ER_DUP_ENTRY') {
+                results.push('ADMIN_EXISTS');
+            }
+            else {
+                throw adminErr;
+            }
+        }
         res.json({ message: 'Migration complete', results, tables });
     }
     catch (e) {
