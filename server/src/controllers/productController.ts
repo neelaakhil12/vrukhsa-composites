@@ -42,8 +42,9 @@ export class ProductController {
                 return res.status(404).json({ message: 'Product not found' });
             }
             res.json(product);
-        } catch (error) {
-            res.status(500).json({ message: 'Error updating product', error });
+        } catch (error: any) {
+            console.error('Update product error:', error);
+            res.status(500).json({ message: 'Error updating product', error: error.message, stack: error.stack });
         }
     };
 
@@ -54,8 +55,9 @@ export class ProductController {
                 return res.status(404).json({ message: 'Product not found' });
             }
             res.json({ message: 'Product deleted effectively' });
-        } catch (error) {
-            res.status(500).json({ message: 'Error deleting product', error });
+        } catch (error: any) {
+            console.error('Delete product error:', error);
+            res.status(500).json({ message: 'Error deleting product', error: error.message, stack: error.stack });
         }
     };
 

@@ -74,11 +74,20 @@ export class MySQLProductRepository implements IProductRepository {
     }
 
     async update(id: string, data: any): Promise<any | null> {
-        const { _id, __v, id: dataId, createdAt, ...updateData } = data;
+        // Define valid columns to prevent SQL errors from extra fields (like _id, __v, or invalid frontend fields)
+        const VALID_COLUMNS = [
+            'name', 'category', 'subCategory', 'description', 'images', 
+            'price', 'originalPrice', 'discountPercentage', 'stockQuantity', 
+            'variants', 'specifications', 'warranty', 'seller', 
+            'isSponsored', 'deliveryTime', 'isDeleted'
+        ];
+
         const updates: string[] = [];
         const params: any[] = [];
 
-        for (const [key, value] of Object.entries(updateData)) {
+        for (const [key, value] of Object.entries(data)) {
+            if (!VALID_COLUMNS.includes(key)) continue;
+
             updates.push(`${key} = ?`);
             if (['images', 'variants', 'specifications'].includes(key)) {
                 params.push(JSON.stringify(value));
@@ -89,7 +98,7 @@ export class MySQLProductRepository implements IProductRepository {
             }
         }
 
-        if (updates.length === 0) return this.findById(id);
+        if (updates.length === 0 && !data.updatedAt) return this.findById(id);
 
         updates.push('updatedAt = ?');
         params.push(new Date());

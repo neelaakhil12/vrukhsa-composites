@@ -44,7 +44,8 @@ class ProductController {
                 res.json(product);
             }
             catch (error) {
-                res.status(500).json({ message: 'Error updating product', error });
+                console.error('Update product error:', error);
+                res.status(500).json({ message: 'Error updating product', error: error.message, stack: error.stack });
             }
         };
         this.deleteProduct = async (req, res) => {
@@ -56,7 +57,8 @@ class ProductController {
                 res.json({ message: 'Product deleted effectively' });
             }
             catch (error) {
-                res.status(500).json({ message: 'Error deleting product', error });
+                console.error('Delete product error:', error);
+                res.status(500).json({ message: 'Error deleting product', error: error.message, stack: error.stack });
             }
         };
         this.restoreProduct = async (req, res) => {

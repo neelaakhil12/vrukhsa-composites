@@ -66,10 +66,18 @@ class MySQLProductRepository {
         return this.findById(id);
     }
     async update(id, data) {
-        const { _id, __v, id: dataId, createdAt, ...updateData } = data;
+        // Define valid columns to prevent SQL errors from extra fields (like _id, __v, or invalid frontend fields)
+        const VALID_COLUMNS = [
+            'name', 'category', 'subCategory', 'description', 'images',
+            'price', 'originalPrice', 'discountPercentage', 'stockQuantity',
+            'variants', 'specifications', 'warranty', 'seller',
+            'isSponsored', 'deliveryTime', 'isDeleted'
+        ];
         const updates = [];
         const params = [];
-        for (const [key, value] of Object.entries(updateData)) {
+        for (const [key, value] of Object.entries(data)) {
+            if (!VALID_COLUMNS.includes(key))
+                continue;
             updates.push(`${key} = ?`);
             if (['images', 'variants', 'specifications'].includes(key)) {
                 params.push(JSON.stringify(value));
@@ -81,7 +89,7 @@ class MySQLProductRepository {
                 params.push(value);
             }
         }
-        if (updates.length === 0)
+        if (updates.length === 0 && !data.updatedAt)
             return this.findById(id);
         updates.push('updatedAt = ?');
         params.push(new Date());
