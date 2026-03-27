@@ -42,7 +42,7 @@ app.use('/uploads', express_1.default.static(UPLOADS_PATH));
 const DIST_PATH = path_1.default.join(__dirname, '../../dist');
 app.use(express_1.default.static(DIST_PATH));
 // Production Health Check with Version/Timestamp
-const VERSION = '1.2.1-DBFIX';
+const VERSION = '1.2.2-ADMINFIX';
 const DEPLOY_TIME = new Date().toISOString();
 app.get('/api/health', (req, res) => {
     res.json({

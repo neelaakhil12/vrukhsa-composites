@@ -44,7 +44,7 @@ const DIST_PATH = path.join(__dirname, '../../dist');
 app.use(express.static(DIST_PATH));
 
 // Production Health Check with Version/Timestamp
-const VERSION = '1.2.1-DBFIX';
+const VERSION = '1.2.2-ADMINFIX';
 const DEPLOY_TIME = new Date().toISOString();
 
 app.get('/api/health', (req: Request, res: Response) => {
