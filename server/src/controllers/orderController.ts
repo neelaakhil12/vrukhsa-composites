@@ -113,11 +113,12 @@ export const cancelOrder = async (req: Request, res: Response) => {
 export const getAllOrders = async (req: Request, res: Response) => {
     try {
         const [rows] = await pool.query(
-            'SELECT o.*, u.name as userName, u.email as userEmail FROM Order o JOIN User u ON o.userId = u.id ORDER BY o.createdAt DESC'
+            'SELECT o.*, u.name as userName, u.email as userEmail FROM `Order` o LEFT JOIN User u ON o.userId = u.id ORDER BY o.createdAt DESC'
         );
         res.json((rows as any[]).map(mapRowToOrder));
-    } catch (error) {
-        res.status(500).json({ message: 'Server Error', error });
+    } catch (error: any) {
+        console.error('Get all orders error:', error);
+        res.status(500).json({ message: 'Server Error', error: error.message, stack: error.stack });
     }
 };
 

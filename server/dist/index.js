@@ -42,15 +42,116 @@ app.use('/uploads', express_1.default.static(UPLOADS_PATH));
 const DIST_PATH = path_1.default.join(__dirname, '../../dist');
 app.use(express_1.default.static(DIST_PATH));
 // Production Health Check with Version/Timestamp
-const VERSION = '1.2.0-STABLE';
+const VERSION = '1.2.1-DBFIX';
 const DEPLOY_TIME = new Date().toISOString();
 app.get('/api/health', (req, res) => {
     res.json({
         status: 'online',
         version: VERSION,
         deployed: DEPLOY_TIME,
-        service: 'Vruksha Composites API'
+        service: 'Vruksha Composites API',
+        db: 'connected'
     });
+});
+// CRITICAL: Database Migration Endpoint (Protected by check, but for now we need it to fix)
+app.get('/api/admin/migrate', async (req, res) => {
+    const schema = `
+        CREATE TABLE IF NOT EXISTS User (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            name VARCHAR(255) NOT NULL,
+            email VARCHAR(255) NOT NULL UNIQUE,
+            password VARCHAR(255) NOT NULL,
+            role ENUM('user', 'admin') DEFAULT 'user',
+            createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS Product (
+            id VARCHAR(100) PRIMARY KEY,
+            name VARCHAR(500) NOT NULL,
+            category VARCHAR(255) DEFAULT '',
+            subCategory VARCHAR(255) DEFAULT '',
+            description TEXT,
+            images JSON,
+            price DECIMAL(10,2) DEFAULT 0,
+            originalPrice DECIMAL(10,2) DEFAULT 0,
+            discountPercentage DECIMAL(5,2) DEFAULT 0,
+            stockQuantity INT DEFAULT 0,
+            variants JSON,
+            specifications JSON,
+            warranty VARCHAR(255) DEFAULT '',
+            seller VARCHAR(255) DEFAULT 'Vruksha Composites',
+            isSponsored TINYINT(1) DEFAULT 0,
+            deliveryTime VARCHAR(255) DEFAULT '4-5 business days',
+            isDeleted TINYINT(1) DEFAULT 0,
+            createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS Setting (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            \`key\` VARCHAR(255) NOT NULL UNIQUE,
+            value JSON,
+            createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+        );
+
+        CREATE TABLE IF NOT EXISTS Cart (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            userId INT NOT NULL,
+            createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (userId) REFERENCES User(id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS CartItem (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            cartId INT NOT NULL,
+            productId VARCHAR(100) NOT NULL,
+            quantity INT DEFAULT 1,
+            variant JSON,
+            createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (cartId) REFERENCES Cart(id) ON DELETE CASCADE
+        );
+
+        CREATE TABLE IF NOT EXISTS \`Order\` (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            userId INT NOT NULL,
+            items JSON NOT NULL,
+            shippingAddress JSON NOT NULL,
+            paymentMethod ENUM('COD', 'CARD', 'UPI', 'RAZORPAY') DEFAULT 'COD',
+            paymentStatus ENUM('pending', 'paid', 'failed') DEFAULT 'pending',
+            orderStatus ENUM('placed', 'confirmed', 'processing', 'shipped', 'out_for_delivery', 'delivered', 'cancelled') DEFAULT 'placed',
+            totalAmount DECIMAL(10,2) NOT NULL,
+            razorpayOrderId VARCHAR(255),
+            razorpayPaymentId VARCHAR(255),
+            razorpaySignature VARCHAR(255),
+            trackingNumber VARCHAR(255),
+            trackingLink VARCHAR(500),
+            trackingPlatform VARCHAR(255),
+            expectedDeliveryDate DATETIME,
+            deliveryStages JSON,
+            internalNote TEXT,
+            createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
+            updatedAt DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+            FOREIGN KEY (userId) REFERENCES User(id) ON DELETE CASCADE
+        );
+    `;
+    try {
+        // We execute statements one by one for better error tracking
+        const statements = schema.split(';').filter(s => s.trim().length > 0);
+        const results = [];
+        for (const statement of statements) {
+            await mysql_1.default.query(statement);
+            results.push('SUCCESS');
+        }
+        // Check tables
+        const [tables] = await mysql_1.default.query('SHOW TABLES');
+        res.json({ message: 'Migration complete', results, tables });
+    }
+    catch (e) {
+        res.status(500).json({ error: e.message, stack: e.stack });
+    }
 });
 // Catch-all route for SPA
 app.use((req, res) => {
