@@ -30,7 +30,7 @@ async function main() {
 
     // 0. Seed Admin User
     console.log('👤 Seeding Admin User...');
-    const adminPassword = await bcrypt.hash('admin123', 10);
+    const adminPassword = await bcrypt.hash('Durga@05', 10);
     await prisma.user.upsert({
         where: { email: 'admin@vrukshacomposites.com' },
         update: {
@@ -45,7 +45,7 @@ async function main() {
             role: 'admin'
         }
     });
-    console.log('✅ Seeded admin user: admin@vrukshacomposites.com / admin123');
+    console.log('✅ Seeded admin user: admin@vrukshacomposites.com / Durga@05');
 
     // 1. Seed Site Settings (Appearance & CMS)
     console.log('⚙️ Seeding Site Settings...');
