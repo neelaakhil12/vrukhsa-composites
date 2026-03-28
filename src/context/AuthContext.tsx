@@ -13,7 +13,8 @@ interface AuthContextType {
     user: User | null;
     isLoading: boolean;
     login: (data: any) => Promise<void>;
-    register: (data: any) => Promise<void>;
+    register: (data: any) => Promise<any>;
+    verifyOtp: (data: { email: string; otp: string }) => Promise<void>;
     logout: () => Promise<void>;
 }
 
@@ -72,13 +73,28 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     const register = async (formData: any) => {
         try {
             const { data } = await api.post('/auth/register', formData);
-            setUser(data);
-            toast({ title: 'Welcome!', description: 'Account created successfully' });
+            toast({ title: 'OTP Sent!', description: data.message });
+            return data;
         } catch (error: any) {
             toast({
                 variant: 'destructive',
                 title: 'Registration Failed',
                 description: error.response?.data?.message || 'Something went wrong',
+            });
+            throw error;
+        }
+    };
+
+    const verifyOtp = async (otpData: { email: string; otp: string }) => {
+        try {
+            const { data } = await api.post('/auth/verify-otp', otpData);
+            setUser(data);
+            toast({ title: 'Success!', description: 'Account verified and created' });
+        } catch (error: any) {
+            toast({
+                variant: 'destructive',
+                title: 'Verification Failed',
+                description: error.response?.data?.message || 'Invalid or expired OTP',
             });
             throw error;
         }
@@ -97,7 +113,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     };
 
     return (
-        <AuthContext.Provider value={{ user, isLoading, login, register, logout }}>
+        <AuthContext.Provider value={{ user, isLoading, login, register, verifyOtp, logout }}>
             {children}
         </AuthContext.Provider>
     );

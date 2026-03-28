@@ -1,5 +1,5 @@
 import express from 'express';
-import { registerUser, loginUser, logoutUser, getMe } from '../controllers/authController';
+import { registerUser, loginUser, logoutUser, getMe, verifyOtp } from '../controllers/authController';
 import { protect } from '../middleware/authMiddleware';
 import rateLimit from 'express-rate-limit';
 

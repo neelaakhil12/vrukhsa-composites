@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import pool from '../lib/mysql';
 import { RegisterSchema, LoginSchema } from '../utils/validation';
+import { sendOTP } from '../utils/mail';
 
 const generateToken = (id: number | string) => {
     return jwt.sign({ id }, process.env.JWT_SECRET || 'secret', {
@@ -27,13 +28,73 @@ export const registerUser = async (req: Request, res: Response) => {
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const [insertResult] = await pool.query(
-            'INSERT INTO User (name, email, password, role, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?)',
-            [name, email, hashedPassword, 'user', new Date(), new Date()]
+        
+        // Generate 6-digit OTP
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+        // Create unverified user with OTP
+        await pool.query(
+            'INSERT INTO User (name, email, password, role, isVerified, otp, otpExpiry, createdAt, updatedAt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE name=?, password=?, otp=?, otpExpiry=?, isVerified=0',
+            [name, email, hashedPassword, 'user', false, otp, otpExpiry, new Date(), new Date(), name, hashedPassword, otp, otpExpiry]
         );
         
-        const userId = (insertResult as any).insertId;
-        const token = generateToken(userId);
+        // Send OTP email
+        const emailSent = await sendOTP(email, otp);
+        if (!emailSent) {
+            res.status(500).json({ message: 'Failed to send verification email' });
+            return;
+        }
+
+        res.status(200).json({
+            message: 'Check your registered mail and enter the OTP to create your account',
+            email
+        });
+    } catch (error) {
+        console.error('Register error:', error);
+        res.status(500).json({ message: 'Server Error', error });
+    }
+};
+
+export const verifyOtp = async (req: Request, res: Response) => {
+    try {
+        const { email, otp } = req.body;
+
+        if (!email || !otp) {
+            res.status(400).json({ message: 'Email and OTP are required' });
+            return;
+        }
+
+        const [users] = await pool.query('SELECT * FROM User WHERE email = ?', [email]);
+        const user = (users as any[])[0];
+
+        if (!user) {
+            res.status(404).json({ message: 'User not found' });
+            return;
+        }
+
+        if (user.isVerified) {
+            res.status(400).json({ message: 'Account already verified' });
+            return;
+        }
+
+        if (user.otp !== otp) {
+            res.status(400).json({ message: 'Invalid OTP' });
+            return;
+        }
+
+        if (new Date() > new Date(user.otpExpiry)) {
+            res.status(400).json({ message: 'OTP has expired' });
+            return;
+        }
+
+        // Mark as verified and clear OTP fields
+        await pool.query(
+            'UPDATE User SET isVerified = 1, otp = NULL, otpExpiry = NULL WHERE id = ?',
+            [user.id]
+        );
+
+        const token = generateToken(user.id);
         
         res.cookie('jwt', token, {
             httpOnly: true,
@@ -42,14 +103,15 @@ export const registerUser = async (req: Request, res: Response) => {
             maxAge: 30 * 24 * 60 * 60 * 1000,
         });
 
-        res.status(201).json({
-            _id: userId,
-            name,
-            email,
-            role: 'user',
+        res.json({
+            _id: user.id,
+            name: user.name,
+            email: user.email,
+            role: user.role,
+            message: 'Account verified successfully'
         });
     } catch (error) {
-        console.error('Register error:', error);
+        console.error('OTP Verification error:', error);
         res.status(500).json({ message: 'Server Error', error });
     }
 };
@@ -75,6 +137,11 @@ export const loginUser = async (req: Request, res: Response) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
             res.status(401).json({ message: 'Invalid email or password' });
+            return;
+        }
+
+        if (!user.isVerified) {
+            res.status(403).json({ message: 'Please verify your email address first' });
             return;
         }
 
