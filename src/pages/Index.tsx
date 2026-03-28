@@ -7,6 +7,8 @@ import ProductSection from '@/components/ProductSection';
 import { fetchProducts, fetchSettings } from '@/api/client';
 import { Product } from '@/data/products';
 
+import SEO from '@/components/SEO';
+
 const Index = () => {
   const { data: allProducts = [], isLoading: productsLoading } = useQuery({
     queryKey: ['products'],
@@ -57,6 +59,10 @@ const Index = () => {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO 
+        title="Home" 
+        description="Vruksha Composites - Industrial composites and chemicals in Andhra Pradesh, Telangana and India. Buy aluminium powder, industrial materials and more."
+      />
       <Header />
 
       <main>

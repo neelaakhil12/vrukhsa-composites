@@ -25,7 +25,8 @@ import {
     Eye,
     Truck,
     CreditCard,
-    LogOut
+    LogOut,
+    Star
 } from 'lucide-react';
 import { toast } from 'sonner';
 import FileUpload from '@/components/FileUpload';
@@ -38,10 +39,11 @@ const AdminDashboard = () => {
     const [products, setProducts] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
-    const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'appearance' | 'content' | 'orders'>('dashboard');
+    const [activeTab, setActiveTab] = useState<'dashboard' | 'products' | 'appearance' | 'content' | 'orders' | 'reviews'>('dashboard');
     const [isSavingSettings, setIsSavingSettings] = useState(false);
     const [isSidebarOpen, setIsSidebarOpen] = useState(false);
     const [orders, setOrders] = useState<any[]>([]);
+    const [reviews, setReviews] = useState<any[]>([]);
     const [siteSettings, setSiteSettings] = useState<any>(() => {
         const saved = localStorage.getItem('vruksha_admin_settings_draft');
         return saved ? JSON.parse(saved) : { banners: [], categories: [] };
@@ -63,12 +65,14 @@ const AdminDashboard = () => {
     const fetchData = async () => {
         try {
             setIsLoading(true);
-            const [{ data: productsData }, { data: settingsData }, { data: ordersData }] = await Promise.all([
+            const [{ data: productsData }, { data: settingsData }, { data: ordersData }, { data: reviewsData }] = await Promise.all([
                 api.get('/products?showDeleted=true'),
                 api.get('/settings'),
-                api.get('/orders/admin/all')
+                api.get('/orders/admin/all'),
+                api.get('/reviews/admin/all')
             ]);
             setProducts(productsData);
+            setReviews(reviewsData);
             // Only update site settings if we don't have a local draft, or optionally merge
             // For now, let's always fetch the latest from server but allow local edits to persist if we just refreshed
             // If the user just loaded the page, we want the server data. 
@@ -120,6 +124,17 @@ const AdminDashboard = () => {
             fetchData();
         } catch (error) {
             toast.error('Failed to update payment status');
+        }
+    };
+
+    const handleDeleteReview = async (id: number) => {
+        if (!confirm('Are you sure you want to delete this review?')) return;
+        try {
+            await api.delete(`/reviews/${id}`);
+            toast.success('Review deleted successfully');
+            fetchData();
+        } catch (error) {
+            toast.error('Failed to delete review');
         }
     };
 
@@ -198,6 +213,13 @@ const AdminDashboard = () => {
                         <ShoppingBag size={20} />
                         <span className="font-medium">Orders</span>
                     </button>
+                    <button
+                        onClick={() => { setActiveTab('reviews'); setIsSidebarOpen(false); }}
+                        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${activeTab === 'reviews' ? 'bg-primary text-white shadow-md' : 'text-gray-600 hover:bg-gray-100'}`}
+                    >
+                        <Star size={20} />
+                        <span className="font-medium">Reviews</span>
+                    </button>
                 </nav>
                 <div className="p-4 border-t border-gray-100 space-y-3">
                     <div className="bg-gray-50 rounded-xl p-3 flex items-center gap-3">
@@ -236,7 +258,7 @@ const AdminDashboard = () => {
                             <Menu size={24} />
                         </button>
                         <h2 className="text-sm lg:text-lg font-bold text-gray-900 uppercase tracking-wider truncate max-w-[150px] md:max-w-none">
-                            {activeTab === 'dashboard' ? 'Overview' : activeTab === 'products' ? 'Product Inventory' : activeTab === 'appearance' ? 'Site Appearance' : 'Pages & Content'}
+                            {activeTab === 'dashboard' ? 'Overview' : activeTab === 'products' ? 'Product Inventory' : activeTab === 'appearance' ? 'Site Appearance' : activeTab === 'orders' ? 'Orders' : activeTab === 'reviews' ? 'Product Reviews' : 'Pages & Content'}
                         </h2>
                     </div>
                     <div className="flex items-center gap-4">
@@ -426,6 +448,83 @@ const AdminDashboard = () => {
                             </div>
                         </div>
                     ) : null}
+
+                    {activeTab === 'reviews' && (
+                        <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+                            <div>
+                                <h1 className="text-2xl lg:text-3xl font-extrabold text-gray-900">Product Reviews</h1>
+                                <p className="text-gray-500 text-sm mt-1">Monitor and moderate customer feedback across all products.</p>
+                            </div>
+
+                            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                                <div className="overflow-x-auto">
+                                    <table className="w-full text-left">
+                                        <thead className="bg-gray-50/50 border-b border-gray-100">
+                                            <tr>
+                                                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Product</th>
+                                                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Customer</th>
+                                                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Rating</th>
+                                                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Comment</th>
+                                                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest">Date</th>
+                                                <th className="px-6 py-4 text-xs font-bold text-gray-400 uppercase tracking-widest text-right">Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody className="divide-y divide-gray-50">
+                                            {isLoading ? (
+                                                <tr>
+                                                    <td colSpan={6} className="px-6 py-12 text-center text-gray-400">
+                                                        <Loader2 className="animate-spin mx-auto mb-2 text-primary" />
+                                                        <span>Fetching reviews...</span>
+                                                    </td>
+                                                </tr>
+                                            ) : reviews.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={6} className="px-6 py-12 text-center text-gray-400 italic">No reviews found.</td>
+                                                </tr>
+                                            ) : (
+                                                reviews.map((review) => (
+                                                    <tr key={review.id} className="hover:bg-gray-50/50 transition-colors">
+                                                        <td className="px-6 py-4">
+                                                            <Link to={`/product/${review.productId}`} target="_blank" className="font-bold text-primary hover:underline">
+                                                                {review.productName}
+                                                            </Link>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <div className="font-medium text-gray-900">{review.userName}</div>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <div className="flex items-center gap-1 text-yellow-500">
+                                                                <span className="font-bold">{review.rating}</span>
+                                                                <Star size={14} fill="currentColor" />
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4">
+                                                            <div className="max-w-xs">
+                                                                <p className="font-bold text-sm text-gray-900">{review.title}</p>
+                                                                <p className="text-xs text-gray-500 line-clamp-2">{review.comment}</p>
+                                                            </div>
+                                                        </td>
+                                                        <td className="px-6 py-4 text-sm text-gray-500">
+                                                            {new Date(review.createdAt).toLocaleDateString()}
+                                                        </td>
+                                                        <td className="px-6 py-4 text-right">
+                                                            <button
+                                                                onClick={() => handleDeleteReview(review.id)}
+                                                                className="p-2 text-red-600 hover:bg-red-50 rounded-xl transition-all"
+                                                                title="Delete Review"
+                                                            >
+                                                                <Trash2 size={18} />
+                                                            </button>
+                                                        </td>
+                                                    </tr>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
                     {activeTab === 'appearance' && (
                         <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500 pb-20">

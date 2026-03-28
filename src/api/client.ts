@@ -169,6 +169,32 @@ export const verifyPaymentAPI = async (data: {
     return response.data;
 };
 
+// Review API
+export const fetchReviewsByProductId = async (productId: string) => {
+    const response = await api.get(`/reviews/product/${productId}`);
+    return response.data;
+};
+
+export const submitReviewAPI = async (data: { productId: string; rating: number; title: string; comment: string }) => {
+    const response = await api.post('/reviews', data);
+    return response.data;
+};
+
+export const fetchAllReviewsAdmin = async () => {
+    const response = await api.get('/reviews/admin/all');
+    return response.data;
+};
+
+export const updateReviewAdmin = async (id: number, data: any) => {
+    const response = await api.patch(`/reviews/${id}`, data);
+    return response.data;
+};
+
+export const deleteReviewAdmin = async (id: number) => {
+    const response = await api.delete(`/reviews/${id}`);
+    return response.data;
+};
+
 // Auth interceptors removed to enforce real authentication
 // (Previously contained a mock fallback for /auth/me)
 

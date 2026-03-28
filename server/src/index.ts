@@ -10,6 +10,7 @@ import { orderRouter } from './routes/orderRoutes';
 import settingsRouter from './routes/settingsRoutes';
 import { paymentRouter } from './routes/paymentRoutes';
 import { uploadRouter } from './routes/uploadRoutes';
+import { reviewRouter } from './routes/reviewRoutes';
 import pool from './lib/mysql';
 
 // Configuration
@@ -34,6 +35,7 @@ app.use('/api/orders', orderRouter);
 app.use('/api/settings', settingsRouter);
 app.use('/api/payment', paymentRouter);
 app.use('/api/upload', uploadRouter);
+app.use('/api/reviews', reviewRouter);
 
 // Serve static files (uploads)
 const UPLOADS_PATH = path.join(__dirname, '../../uploads');

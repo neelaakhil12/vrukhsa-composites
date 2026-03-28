@@ -1,28 +1,86 @@
 import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
-import { Star, Heart, Share2, ShieldCheck, Truck, RotateCcw, ChevronRight, Minus, Plus, ThumbsUp } from 'lucide-react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { Star, Heart, Share2, ShieldCheck, Truck, RotateCcw, ChevronRight, Minus, Plus, ThumbsUp, MessageSquare, X } from 'lucide-react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import ProductCard from '@/components/ProductCard';
 import { useCart } from '@/context/CartContext';
+import { useAuth } from '@/context/AuthContext';
 import { toast } from '@/hooks/use-toast';
-import { fetchProductById } from '@/api/client';
+import { fetchProductById, fetchReviewsByProductId, submitReviewAPI } from '@/api/client';
 import { Product } from '@/data/products';
 import { getImageUrl } from '@/lib/utils';
+import SEO from '@/components/SEO';
 
 const ProductDetail = () => {
   const { productId } = useParams<{ productId: string }>();
   const { addToCart } = useCart();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const [selectedImage, setSelectedImage] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const [selectedVariants, setSelectedVariants] = useState<Record<string, string>>({});
+
+  // Review state
+  const [isReviewModalOpen, setIsReviewModalOpen] = useState(false);
+  const [reviewRating, setReviewRating] = useState(5);
+  const [reviewTitle, setReviewTitle] = useState('');
+  const [reviewComment, setReviewComment] = useState('');
 
   const { data: product, isLoading, isError } = useQuery({
     queryKey: ['product', productId],
     queryFn: () => fetchProductById(productId!),
     enabled: !!productId
   });
+
+  const { data: reviews = [] } = useQuery({
+    queryKey: ['reviews', productId],
+    queryFn: () => fetchReviewsByProductId(productId!),
+    enabled: !!productId
+  });
+
+  const reviewMutation = useMutation({
+    mutationFn: (newReview: { productId: string; rating: number; title: string; comment: string }) =>
+      submitReviewAPI(newReview),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['reviews', productId] });
+      queryClient.invalidateQueries({ queryKey: ['product', productId] });
+      toast({
+        title: "Review Submitted",
+        description: "Thank you for your feedback!",
+      });
+      setIsReviewModalOpen(false);
+      setReviewRating(5);
+      setReviewTitle('');
+      setReviewComment('');
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.response?.data?.message || "Failed to submit review",
+        variant: "destructive",
+      });
+    }
+  });
+
+  const handleReviewSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!user) {
+      toast({
+        title: "Login Required",
+        description: "Please login to write a review.",
+        variant: "destructive",
+      });
+      return;
+    }
+    reviewMutation.mutate({
+      productId: productId!,
+      rating: reviewRating,
+      title: reviewTitle,
+      comment: reviewComment,
+    });
+  };
 
   if (isLoading) {
     return (
@@ -75,39 +133,25 @@ const ProductDetail = () => {
     window.location.href = '/cart';
   };
 
-  // Mock reviews - in real app, fetch from API
-  const reviews = [
-    {
-      id: 1,
-      author: 'Rahul S.',
-      rating: 5,
-      date: '2 months ago',
-      title: 'Excellent product!',
-      content: 'Amazing quality and fast delivery. Highly recommended for anyone looking for a premium experience.',
-      helpful: 234,
-    },
-    {
-      id: 2,
-      author: 'Priya M.',
-      rating: 4,
-      date: '1 month ago',
-      title: 'Good value for money',
-      content: 'Works great, minor issues with packaging but product is perfect.',
-      helpful: 89,
-    },
-    {
-      id: 3,
-      author: 'Amit K.',
-      rating: 5,
-      date: '3 weeks ago',
-      title: 'Worth every penny',
-      content: 'Exceeded my expectations. The build quality is superb and performance is top-notch.',
-      helpful: 156,
-    },
-  ];
-
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background text-foreground">
+      <SEO 
+        title={product.name}
+        description={product.description}
+        image={getImageUrl(product.images[0])}
+        url={`https://vrukshacomposites.com/product/${product.id}`}
+        type="product"
+        productData={{
+          name: product.name,
+          description: product.description,
+          image: getImageUrl(product.images[0]),
+          price: product.price,
+          currency: 'INR',
+          availability: product.stockQuantity > 0 ? 'in stock' : 'out of stock',
+          rating: product.rating,
+          reviewCount: product.reviewCount
+        }}
+      />
       <Header />
 
       <main className="container mx-auto px-4 py-4">
@@ -349,7 +393,10 @@ const ProductDetail = () => {
         <section className="bg-card rounded-sm p-6 mt-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-bold">Ratings & Reviews</h2>
-            <button className="btn-vc-primary text-sm">
+            <button 
+              onClick={() => setIsReviewModalOpen(true)}
+              className="btn-vc-primary text-sm"
+            >
               Rate Product
             </button>
           </div>
@@ -393,7 +440,9 @@ const ProductDetail = () => {
 
           {/* Review List */}
           <div className="space-y-6">
-            {reviews.map((review) => (
+            {reviews.length === 0 ? (
+              <p className="text-muted-foreground text-center py-8">No reviews yet. Be the first to rate this product!</p>
+            ) : reviews.map((review: any) => (
               <div key={review.id} className="border-b border-border pb-6 last:border-0">
                 <div className="flex items-center gap-3 mb-2">
                   <span className="rating-badge text-xs">
@@ -401,14 +450,14 @@ const ProductDetail = () => {
                   </span>
                   <span className="font-medium">{review.title}</span>
                 </div>
-                <p className="text-muted-foreground mb-3">{review.content}</p>
+                <p className="text-muted-foreground mb-3">{review.comment}</p>
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-muted-foreground">
-                    {review.author} • {review.date}
+                    {review.userName} • {new Date(review.createdAt).toLocaleDateString()}
                   </span>
                   <button className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground">
                     <ThumbsUp size={14} />
-                    Helpful ({review.helpful})
+                    Helpful
                   </button>
                 </div>
               </div>
@@ -419,6 +468,92 @@ const ProductDetail = () => {
       </main>
 
       <Footer />
+
+      {/* Review Modal */}
+      {isReviewModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-card w-full max-w-lg rounded-sm shadow-2xl p-6 relative animate-in fade-in zoom-in duration-200">
+            <button 
+              onClick={() => setIsReviewModalOpen(false)}
+              className="absolute top-4 right-4 p-1 hover:bg-muted rounded-full transition-colors"
+            >
+              <X size={20} />
+            </button>
+            
+            <h2 className="text-2xl font-bold mb-6 flex items-center gap-2">
+              <MessageSquare className="text-primary" />
+              Write a Review
+            </h2>
+            
+            <form onSubmit={handleReviewSubmit} className="space-y-6">
+              <div>
+                <label className="block text-sm font-medium mb-2">Overall Rating</label>
+                <div className="flex gap-2">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button
+                      key={star}
+                      type="button"
+                      onClick={() => setReviewRating(star)}
+                      className="p-1 hover:scale-110 transition-transform"
+                    >
+                      <Star 
+                        size={32} 
+                        className={star <= reviewRating ? 'text-yellow-400 fill-yellow-400' : 'text-gray-300'} 
+                      />
+                    </button>
+                  ))}
+                </div>
+              </div>
+              
+              <div>
+                <label htmlFor="title" className="block text-sm font-medium mb-1">
+                  Title (Optional)
+                </label>
+                <input
+                  id="title"
+                  type="text"
+                  value={reviewTitle}
+                  onChange={(e) => setReviewTitle(e.target.value)}
+                  placeholder="Summarize your experience"
+                  className="w-full bg-background border border-border rounded-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+              </div>
+              
+              <div>
+                <label htmlFor="comment" className="block text-sm font-medium mb-1">
+                  Review Details
+                </label>
+                <textarea
+                  id="comment"
+                  required
+                  rows={4}
+                  value={reviewComment}
+                  onChange={(e) => setReviewComment(e.target.value)}
+                  placeholder="What did you like or dislike?"
+                  className="w-full bg-background border border-border rounded-sm py-2 px-3 focus:outline-none focus:ring-2 focus:ring-primary/50"
+                />
+              </div>
+              
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setIsReviewModalOpen(false)}
+                  className="flex-1 btn-vc-secondary py-2"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  disabled={reviewMutation.isPending}
+                  className="flex-1 btn-vc-primary py-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {reviewMutation.isPending ? 'Submitting...' : 'Submit Review'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
