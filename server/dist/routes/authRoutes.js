@@ -18,5 +18,6 @@ const authLimiter = (0, express_rate_limit_1.default)({
 router.post('/register', authLimiter, authController_1.registerUser);
 router.post('/login', authLimiter, authController_1.loginUser);
 router.post('/logout', authController_1.logoutUser);
+router.post('/verify-otp', authController_1.verifyOtp);
 router.get('/me', authMiddleware_1.protect, authController_1.getMe);
 exports.authRouter = router;

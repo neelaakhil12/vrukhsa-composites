@@ -15,6 +15,7 @@ const authLimiter = rateLimit({
 router.post('/register', authLimiter, registerUser);
 router.post('/login', authLimiter, loginUser);
 router.post('/logout', logoutUser);
+router.post('/verify-otp', verifyOtp);
 router.get('/me', protect, getMe);
 
 export const authRouter = router;
