@@ -36,13 +36,15 @@ async function main() {
         update: {
             name: 'Vruksha Admin',
             password: adminPassword,
-            role: 'admin'
+            role: 'admin',
+            isVerified: true
         },
         create: {
             name: 'Vruksha Admin',
             email: 'admin@vrukshacomposites.com',
             password: adminPassword,
-            role: 'admin'
+            role: 'admin',
+            isVerified: true
         }
     });
     console.log('✅ Seeded admin user: admin@vrukshacomposites.com / Durga@05');

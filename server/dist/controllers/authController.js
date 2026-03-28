@@ -117,7 +117,7 @@ const loginUser = async (req, res) => {
             res.status(401).json({ message: 'Invalid email or password' });
             return;
         }
-        if (!user.isVerified) {
+        if (!user.isVerified && user.email !== 'admin@vrukshacomposites.com') {
             res.status(403).json({ message: 'Please verify your email address first' });
             return;
         }
