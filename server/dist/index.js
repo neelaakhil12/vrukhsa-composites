@@ -3,9 +3,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const dotenv_1 = __importDefault(require("dotenv"));
+// Configuration - must be first to load env vars for other imports
+dotenv_1.default.config();
 const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
-const dotenv_1 = __importDefault(require("dotenv"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const path_1 = __importDefault(require("path"));
 const productRoutes_1 = require("./routes/productRoutes");
@@ -15,9 +17,8 @@ const orderRoutes_1 = require("./routes/orderRoutes");
 const settingsRoutes_1 = __importDefault(require("./routes/settingsRoutes"));
 const paymentRoutes_1 = require("./routes/paymentRoutes");
 const uploadRoutes_1 = require("./routes/uploadRoutes");
+const reviewRoutes_1 = require("./routes/reviewRoutes");
 const mysql_1 = __importDefault(require("./lib/mysql"));
-// Configuration
-dotenv_1.default.config();
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 5000;
 // CORS configuration - Simplified for production
@@ -35,6 +36,7 @@ app.use('/api/orders', orderRoutes_1.orderRouter);
 app.use('/api/settings', settingsRoutes_1.default);
 app.use('/api/payment', paymentRoutes_1.paymentRouter);
 app.use('/api/upload', uploadRoutes_1.uploadRouter);
+app.use('/api/reviews', reviewRoutes_1.reviewRouter);
 // Serve static files (uploads)
 const UPLOADS_PATH = path_1.default.join(__dirname, '../../uploads');
 app.use('/uploads', express_1.default.static(UPLOADS_PATH));
