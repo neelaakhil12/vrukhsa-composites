@@ -35,10 +35,10 @@ const Header = () => {
     <header className="vc-header">
       <div className="container mx-auto">
         {/* Desktop Header */}
-        <div className="hidden md:flex items-center gap-4 h-16 px-4">
+        <div className="hidden md:flex items-center gap-4 h-20 px-4">
           {/* Logo */}
-          <Link to="/" className="flex items-center">
-            <img src="/logo.jpeg" alt="Vruksha Composites" className="h-12 w-auto object-contain" />
+          <Link to="/" className="flex items-center bg-white p-1 rounded-sm">
+            <img src="/logo.jpeg" alt="Vruksha Composites" className="h-14 w-auto object-contain" />
           </Link>
 
           {/* Search Bar */}
@@ -63,8 +63,8 @@ const Header = () => {
           {/* Login Dropdown */}
           {user ? (
             <DropdownMenu>
-              <DropdownMenuTrigger className="flex items-center gap-1 px-4 py-2 text-primary-foreground hover:text-primary-foreground/80">
-                <User size={20} />
+              <DropdownMenuTrigger className="flex items-center gap-1 px-4 py-2 text-foreground hover:text-primary transition-colors">
+                <User size={20} className="text-primary" />
                 <span className="font-medium">{user.name}</span>
                 <ChevronDown size={16} />
               </DropdownMenuTrigger>
@@ -99,7 +99,7 @@ const Header = () => {
             </DropdownMenu>
           ) : (
             <Link to="/login">
-              <button className="bg-white text-primary font-medium px-8 py-1 rounded-sm hover:bg-white/90">
+              <button className="bg-primary text-white font-medium px-8 py-2 rounded-sm hover:bg-primary/90 transition-all shadow-sm">
                 Login
               </button>
             </Link>
@@ -107,15 +107,15 @@ const Header = () => {
 
 
           {/* Help */}
-          <button className="flex items-center gap-1 text-primary-foreground hover:text-primary-foreground/80">
-            <HelpCircle size={18} />
+          <button className="flex items-center gap-1 text-foreground hover:text-primary transition-colors">
+            <HelpCircle size={18} className="text-primary" />
             <span className="font-medium">Help</span>
           </button>
 
           {/* Cart */}
-          <Link to="/cart" className="flex items-center gap-2 text-primary-foreground hover:text-primary-foreground/80">
+          <Link to="/cart" className="flex items-center gap-2 text-foreground hover:text-primary transition-colors">
             <div className="relative">
-              <ShoppingCart size={22} />
+              <ShoppingCart size={22} className="text-primary" />
               {totalItems > 0 && (
                 <span className="absolute -top-2 -right-2 bg-secondary text-secondary-foreground text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
                   {totalItems}
@@ -127,17 +127,17 @@ const Header = () => {
         </div>
 
         {/* Mobile Header */}
-        <div className="md:hidden flex items-center justify-between h-14 px-4">
+        <div className="md:hidden flex items-center justify-between h-20 px-4">
           <button onClick={() => setMobileMenuOpen(!mobileMenuOpen)}>
-            {mobileMenuOpen ? <X size={24} className="text-primary-foreground" /> : <Menu size={24} className="text-primary-foreground" />}
+            {mobileMenuOpen ? <X size={24} className="text-foreground" /> : <Menu size={24} className="text-foreground" />}
           </button>
 
-          <Link to="/" className="flex items-center">
-            <img src="/logo.jpeg" alt="Vruksha Composites" className="h-10 w-auto object-contain" />
+          <Link to="/" className="flex items-center bg-white p-1 rounded-sm">
+            <img src="/logo.jpeg" alt="Vruksha Composites" className="h-14 w-auto object-contain" />
           </Link>
 
-          <Link to="/cart" className="relative text-primary-foreground">
-            <ShoppingCart size={22} />
+          <Link to="/cart" className="relative text-foreground">
+            <ShoppingCart size={22} className="text-primary" />
             {totalItems > 0 && (
               <span className="absolute -top-2 -right-2 bg-secondary text-secondary-foreground text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold">
                 {totalItems}

@@ -117,8 +117,8 @@
 
 @layer components {
   .vc-header {
-    @apply bg-primary text-primary-foreground sticky top-0 z-50;
-    box-shadow: var(--shadow-md);
+    @apply bg-white text-foreground sticky top-0 z-50 border-b border-border;
+    box-shadow: var(--shadow-sm);
   }
 
   .vc-search {

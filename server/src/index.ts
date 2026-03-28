@@ -1,6 +1,9 @@
+import dotenv from 'dotenv';
+// Configuration - must be first to load env vars for other imports
+dotenv.config();
+
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import dotenv from 'dotenv';
 import cookieParser from 'cookie-parser';
 import path from 'path';
 import { productRouter } from './routes/productRoutes';
@@ -12,9 +15,6 @@ import { paymentRouter } from './routes/paymentRoutes';
 import { uploadRouter } from './routes/uploadRoutes';
 import { reviewRouter } from './routes/reviewRoutes';
 import pool from './lib/mysql';
-
-// Configuration
-dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
