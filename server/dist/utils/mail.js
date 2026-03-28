@@ -8,13 +8,14 @@ const nodemailer_1 = __importDefault(require("nodemailer"));
 const transporter = nodemailer_1.default.createTransport({
     service: 'gmail',
     auth: {
-        user: process.env.SMTP_USER,
-        pass: process.env.SMTP_PASS,
+        user: process.env.SMTP_USER || 'vrukshacomposites@gmail.com',
+        pass: process.env.SMTP_PASS || 'ydni ptzv rxjo cukw',
     },
 });
 const sendOTP = async (email, otp) => {
+    const smtpUser = process.env.SMTP_USER || 'vrukshacomposites@gmail.com';
     const mailOptions = {
-        from: `"Vruksha Composites" <${process.env.SMTP_USER}>`,
+        from: `"Vruksha Composites" <${smtpUser}>`,
         to: email,
         subject: 'Verification Code for Vruksha Composites',
         html: `
